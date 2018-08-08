@@ -10,12 +10,12 @@ testManager::~testManager()
 {
     for(auto it=strategyList.begin();it!=strategyList.end();it++)
     {
-        cuckooRing *s = *it;
+        cuckoo *s = *it;
         delete s;
     }
 }
 
-bool testManager::addStrategy(cuckooRing* s)
+bool testManager::addStrategy(cuckoo* s)
 {
     strategySize++;
     strategyList.push_back(s);
@@ -47,6 +47,6 @@ void testManager::log(bool showDetail)
 {
     for(auto it=strategyList.begin();it!=strategyList.end();it++)
     {
-        (*it)->log(showDetail);
+        //(*it)->log(showDetail);
     }
 }

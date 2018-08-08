@@ -12,14 +12,14 @@ class testManager
 {
 public:
     int strategySize;
-    vector<cuckooRing*> strategyList;
+    vector<cuckoo*> strategyList;
     ifstream fin;        
     char readBuf[105];
 
     testManager();
     ~testManager();
 
-    bool addStrategy(cuckooRing* s);
+    bool addStrategy(cuckoo* s);
 
     int read(); 
     

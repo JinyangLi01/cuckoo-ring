@@ -2,6 +2,7 @@
 #define __CUCKOO_RING_H__
 
 #include "hash/hash_function.h"
+#include "cuckoo.h"
 
 using namespace std;
 #include <memory.h>
@@ -15,7 +16,7 @@ typedef unsigned int(*hashFunction)(const unsigned char*str, unsigned int len);
 typedef unsigned int uint;
 typedef unsigned char uchar;
 
-class cuckooRing
+class cuckooRing:public cuckoo
 {
 public:
     class bucket
@@ -31,30 +32,30 @@ public:
         ~bucket()
         {
             delete [] fp;
-            delete [] fp;
+            delete [] valid;
         }
         uint*fp;
         bool*valid;
     };
 
-    cuckooRing(int _bucketNum, int _bucketSize,
-        hashFunction _hf, hashFunction _hs, hashFunction _hc)
-    :bSize(_bucketNum)
-    ,bSlot(_bucketSize)
-    ,hf(_hf)
-    ,hs(_hs)
+    cuckooRing(int _size, int _slot,
+        hashFunction _hFP, hashFunction _hOffset, hashFunction _hc)
+    :bSize(_size)
+    ,bSlot(_slot)
+    ,hFP(_hFP)
+    ,hOffset(_hOffset)
     ,hc(_hc)
     {
-        buf = new bucket*[_bucketNum];
-        for(int i=0;i<_bucketNum;i++)
-            buf[i]=new bucket(_bucketSize);
+        buf = new bucket*[_size];
+        for(int i=0;i<_size;i++)
+            buf[i]=new bucket(_size);
         hSize=1;
         while(hSize<=bSize)
             hSize*=2;
         hSize/=2;
     }
 
-    virtual ~cuckooRing()
+    ~cuckooRing()
     {
         for(int i=0;i<bSize;i++)
             delete buf[i];
@@ -63,20 +64,19 @@ public:
 
     int ring(int pos)
     {
-        if(pos>=bSize)
-            return pos-bSize;
+        pos=pos%bSize;
         if(pos<0)
-            return pos+bSize;
+            pos+=bSize;
         return pos;
     }
 
     bool insert(int key)
     {
         //calc pos
-        uint fp=hf((uchar*)&key,4);
-        int start=hs((uchar*)&fp,4);
-        int hashk=hc((uchar*)&key,4);
-        int hashfk=hc((uchar*)&key,4);
+        uint fp=hOffset((uchar*)&key,4);
+        int start=hOffset((uchar*)&fp,4);
+        int hashk=hc((uchar*)&key,4)&(hSize-1);
+        int hashfk=hc((uchar*)&fp,4)&(hSize-1);
         int p1=ring(start+hashk);
         int p2=ring(start+(hashk^hashfk));
 
@@ -108,8 +108,8 @@ public:
             buf[kickP]->fp[kickSlot]=kickFp;
             kickFp=tmp;
             
-            int kickStartPos=hs((uchar*)&kickFp,4);
-            int kickHashFk=hc((uchar*)&kickFp,4);
+            int kickStartPos=hOffset((uchar*)&kickFp,4);
+            int kickHashFk=hc((uchar*)&kickFp,4)&(hSize-1);
             kickP=ring((ring(kickP-kickStartPos)^kickHashFk)+kickStartPos);
 
             for(int i=0;i<bSlot;i++)
@@ -128,13 +128,13 @@ public:
     bool lookup(int key)
     {
         //calc pos
-        uint fp=hf((uchar*)&key,4);
-        int start=hs((uchar*)&fp,4);
-        int hashk=hc((uchar*)&key,4);
-        int hashfk=hc((uchar*)&key,4);
+        uint fp=hOffset((uchar*)&key,4);
+        int start=hOffset((uchar*)&fp,4);
+        int hashk=hc((uchar*)&key,4)&(hSize-1);
+        int hashfk=hc((uchar*)&fp,4)&(hSize-1);
         int p1=ring(start+hashk);
         int p2=ring(start+(hashk^hashfk));
-
+        
         //find
         for(int i=0;i<bSlot;i++)
         {
@@ -149,10 +149,10 @@ public:
     bool del(int key)
     {
         //calc pos
-        uint fp=hf((uchar*)&key,4);
-        int start=hs((uchar*)&fp,4);
-        int hashk=hc((uchar*)&key,4);
-        int hashfk=hc((uchar*)&key,4);
+        uint fp=hFP((uchar*)&key,4);
+        int start=hOffset((uchar*)&fp,4);
+        int hashk=hc((uchar*)&key,4)&(hSize-1);
+        int hashfk=hc((uchar*)&fp,4)&(hSize-1);
         int p1=ring(start+hashk);
         int p2=ring(start+(hashk^hashfk));
 
@@ -173,6 +173,28 @@ public:
         return false;
     }
 
+    bool expand(){return false;}
+
+    bool compress(){return false;}
+
+    void printBuf()
+    {
+        return;
+        for(int i=0;i<bSize;i++)
+        {
+            for(int j=0;j<bSlot;j++)
+            {
+                if(buf[i]->valid[j])
+                    cout<<buf[i]->fp[j]<<" ";
+                else
+                    cout<<"X ";
+            }
+            cout<<endl;
+        }
+
+
+    }
+
     void log(bool showDetail=false)
     {
         cout<<"*******************"<<endl;
@@ -186,8 +208,8 @@ protected:
     int bSlot;
     int hSize;
     bucket **buf;
-    hashFunction hf; //fingerprint
-    hashFunction hs; //starting position
+    hashFunction hFP; //fingerprint
+    hashFunction hOffset; //starting position
     hashFunction hc; //cuckoo hash  
     string strategyName;
 
