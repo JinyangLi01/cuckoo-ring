@@ -1,6 +1,10 @@
 #ifndef __CUCKOO_H__
 #define __CUCKOO_H__
 
+typedef unsigned int(*hashFunction)(const unsigned char*str, unsigned int len);
+typedef unsigned int uint;
+typedef unsigned char uchar;
+
 class cuckoo
 {
 public:

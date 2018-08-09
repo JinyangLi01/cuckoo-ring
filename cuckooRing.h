@@ -12,22 +12,18 @@ using namespace std;
 #include <vector>
 #include <time.h>
 
-typedef unsigned int(*hashFunction)(const unsigned char*str, unsigned int len);
-typedef unsigned int uint;
-typedef unsigned char uchar;
-
 class cuckooRing:public cuckoo
 {
 public:
     class bucket
     {
     public:
-        bucket(int _bSize)
+        bucket(int _size)
         {
-            fp = new uint[_bSize];
-            memset(fp, 0, _bSize * sizeof(uint));
-            valid = new bool[_bSize];
-            memset(valid, 0, _bSize * sizeof(bool));
+            fp = new uint[_size];
+            memset(fp, 0, _size * sizeof(uint));
+            valid = new bool[_size];
+            memset(valid, 0, _size * sizeof(bool));
         }
         ~bucket()
         {
@@ -38,48 +34,70 @@ public:
         bool*valid;
     };
 
-    cuckooRing(int _size, int _slot,
+    cuckooRing(int _len, int _slot,
         hashFunction _hFP, hashFunction _hOffset, hashFunction _hc)
-    :bSize(_size)
+    :bLen(_len)
     ,bSlot(_slot)
     ,hFP(_hFP)
     ,hOffset(_hOffset)
     ,hc(_hc)
     {
-        buf = new bucket*[_size];
-        for(int i=0;i<_size;i++)
-            buf[i]=new bucket(_size);
-        hSize=1;
-        while(hSize<=bSize)
-            hSize*=2;
-        hSize/=2;
+        srand((unsigned)time(NULL));
+        buf = new bucket*[_len];
+        for(int i=0;i<_len;i++)
+            buf[i]=new bucket(_slot);
+        hLen=1;
+        hPower=0;
+        while(hLen<=bLen)
+        {
+            hLen*=2;
+            hPower++;
+        }
+        hLen/=2;
+        hPower--;
     }
 
     ~cuckooRing()
     {
-        for(int i=0;i<bSize;i++)
+        for(int i=0;i<bLen;i++)
             delete buf[i];
         delete [] buf;
     }
 
     int ring(int pos)
     {
-        pos=pos%bSize;
+        pos=pos%bLen;
         if(pos<0)
-            pos+=bSize;
+            pos+=bLen;
         return pos;
+    }
+
+    void getPosByKey(int key, uint&fp, int&p1, int&p2)
+    {
+        fp=hFP((uchar*)&key,4);
+        int start=hOffset((uchar*)&fp,4)%bLen;
+        int hashk=hc((uchar*)&key,4)&(hLen-1);
+        int hashfk=hc((uchar*)&fp,4)&(hLen-1);
+        p1=ring(start+hashk);
+        p2=ring(start+(hashk^hashfk));
+   }
+
+    int getAnotherPos(int pos, uint fp)
+    {
+        int start=hOffset((uchar*)&fp,4)%bLen;
+        int hashFk=hc((uchar*)&fp,4)&(hLen-1);
+        return ring(start+(ring(pos-start)^hashFk));
     }
 
     bool insert(int key)
     {
-        //calc pos
-        uint fp=hOffset((uchar*)&key,4);
-        int start=hOffset((uchar*)&fp,4);
-        int hashk=hc((uchar*)&key,4)&(hSize-1);
-        int hashfk=hc((uchar*)&fp,4)&(hSize-1);
-        int p1=ring(start+hashk);
-        int p2=ring(start+(hashk^hashfk));
-
+        uint fp;
+        int p1, p2;
+        getPosByKey(key, fp, p1, p2);
+        return insertWithoutKey(fp, p1, p2);
+    }
+    bool insertWithoutKey(uint fp, int p1, int p2)
+    {
         //find empty slot
         for(int i=0;i<bSlot;i++)
         {
@@ -98,20 +116,45 @@ public:
         }
 
         //kick
-        srand((unsigned)time(NULL));
         int kickP=rand()%2==0?p1:p2;
         uint kickFp=fp;
         for(int i=0;i<MAXKICK;i++)
         {
+#if 1
+            //random kick with one hop check
             int kickSlot=rand()%bSlot;
+            int tmpKickP;
+
+            for(int i=0;i<bSlot;i++)
+            {
+                int p2=getAnotherPos(kickP, buf[kickP]->fp[i]);
+                if(kickSlot==i)
+                    tmpKickP=p2;
+                for(int j=0;j<bSlot;j++)
+                {
+                    if(!buf[p2]->valid[j])
+                    {
+                        buf[p2]->fp[j]=buf[kickP]->fp[i];
+                        buf[p2]->valid[j]=true;
+                        buf[kickP]->fp[i]=kickFp;
+                        return true;
+                    }
+                }
+            }
             int tmp=buf[kickP]->fp[kickSlot];
             buf[kickP]->fp[kickSlot]=kickFp;
             kickFp=tmp;
-            
-            int kickStartPos=hOffset((uchar*)&kickFp,4);
-            int kickHashFk=hc((uchar*)&kickFp,4)&(hSize-1);
-            kickP=ring((ring(kickP-kickStartPos)^kickHashFk)+kickStartPos);
+            kickP = tmpKickP;
+#endif
+#if 0
+            //random kick
+            int kickSlot=rand()%bSlot;
 
+            int tmp=buf[kickP]->fp[kickSlot];
+            buf[kickP]->fp[kickSlot]=kickFp;
+            kickFp=tmp;
+             
+            kickP = getAnotherPos(kickP, kickFp);
             for(int i=0;i<bSlot;i++)
             {
                 if(!buf[kickP]->valid[i])
@@ -121,20 +164,17 @@ public:
                     return true;
                 }
             }
+#endif
         }
         return false;
     }
 
     bool lookup(int key)
     {
-        //calc pos
-        uint fp=hOffset((uchar*)&key,4);
-        int start=hOffset((uchar*)&fp,4);
-        int hashk=hc((uchar*)&key,4)&(hSize-1);
-        int hashfk=hc((uchar*)&fp,4)&(hSize-1);
-        int p1=ring(start+hashk);
-        int p2=ring(start+(hashk^hashfk));
-        
+        uint fp;
+        int p1, p2;
+        getPosByKey(key, fp, p1, p2);
+
         //find
         for(int i=0;i<bSlot;i++)
         {
@@ -148,13 +188,9 @@ public:
 
     bool del(int key)
     {
-        //calc pos
-        uint fp=hFP((uchar*)&key,4);
-        int start=hOffset((uchar*)&fp,4);
-        int hashk=hc((uchar*)&key,4)&(hSize-1);
-        int hashfk=hc((uchar*)&fp,4)&(hSize-1);
-        int p1=ring(start+hashk);
-        int p2=ring(start+(hashk^hashfk));
+        uint fp;
+        int p1, p2;
+        getPosByKey(key, fp, p1, p2);
 
         //find
         for(int i=0;i<bSlot;i++)
@@ -173,14 +209,106 @@ public:
         return false;
     }
 
-    bool expand(){return false;}
+    void calcPower(int len, int&size, int&power)
+    {
+        if(len<=0)
+            return;
+        size=1, power=0;
+        while(size<=len)
+        {
+            size*=2;
+            power++;
+        }
+        size=size/2;
+        power--;
+    }
 
-    bool compress(){return false;}
+    bool resize(int len)
+    {
+        if(len<=0)
+            return false;
+
+        //save backup info
+        int saveBLen=bLen;
+        int saveHLen=hLen;
+        int saveHPower=hPower;
+        bucket**saveBuf=buf;
+        
+        //new space
+        bLen=len;
+        calcPower(len, hLen, hPower);
+        if(hPower>saveHPower)
+        {   //hPower cannot be larger than before
+            hLen=saveHLen;
+            hPower=saveHPower;
+        }
+        buf = new bucket*[len];
+        for(int i=0;i<len;i++)
+            buf[i]=new bucket(bSlot);
+
+        //transfer
+        bool suc=true;
+        for(int i=0;i<saveBLen;i++)
+        {
+            for(int j=0;j<bSlot;j++)
+            {
+                if(saveBuf[i]->valid[j])
+                {
+                    uint transFp=saveBuf[i]->fp[j];
+                    int oldStart=hOffset((uchar*)&transFp,4)%saveBLen;
+                    int newStart=hOffset((uchar*)&transFp,4)%bLen;
+                    int curPos=(i-oldStart+saveBLen)%saveBLen;
+                    curPos=curPos&(hLen-1);
+                    int hashFk=hc((uchar*)&transFp,4)&(hLen-1);
+                    int p1=ring(newStart+curPos);
+                    int p2=ring(newStart+(curPos^hashFk));
+                    suc=insertWithoutKey(transFp,p1,p2);
+                }
+                if(!suc)
+                    break;
+            }
+            if(!suc)
+                break;
+        }
+
+        //end
+        if(!suc)
+        {
+            for(int i=0;i<bLen;i++)
+                delete buf[i];
+            delete [] buf;
+            //load backup info
+            buf = saveBuf;
+            bLen = saveBLen;
+            return false;
+        }
+        for(int i=0;i<saveBLen;i++)
+            delete saveBuf[i];
+        delete [] saveBuf;
+        return true;
+    }
+
+    bool expand(int len)
+    {
+        if(len<=bLen)
+            return false;
+        return resize(len);
+    }
+    bool expand(){return expand(bLen*2);}
+
+    bool compress(int len)
+    {
+        if(len>=bLen || len <=0)
+            return false;
+        return resize(len);
+    }
+    bool compress(){return compress(bLen/2);}
 
     void printBuf()
     {
-        return;
-        for(int i=0;i<bSize;i++)
+        //return;
+        cout<<"para:"<<bLen<<" "<<bSlot<<" "<<hLen<<endl;
+        for(int i=0;i<bLen;i++)
         {
             for(int j=0;j<bSlot;j++)
             {
@@ -191,22 +319,12 @@ public:
             }
             cout<<endl;
         }
-
-
-    }
-
-    void log(bool showDetail=false)
-    {
-        cout<<"*******************"<<endl;
-        cout<<strategyName<<":"<<endl;
-        if(showDetail)
-        {
-        }
     }
 protected:
-    int bSize;
+    int bLen;
     int bSlot;
-    int hSize;
+    int hLen;
+    int hPower;
     bucket **buf;
     hashFunction hFP; //fingerprint
     hashFunction hOffset; //starting position
