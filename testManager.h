@@ -2,6 +2,7 @@
 #define __TEST_MANAGER_H__
 
 #include "cuckooRing.h"
+#include "timer.h"
 
 using namespace std;
 #include <stdio.h>
