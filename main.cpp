@@ -5,9 +5,9 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-    timer m;
-    m.run();
-    
+    timer t;
+    t.run();
+#if 0
     cuckooRing c(14, 2, BOB1, BOB2, BOB3);
     cout<<c.insert(1)<<endl;c.printBuf();
     cout<<c.insert(2)<<endl;c.printBuf();
@@ -36,13 +36,13 @@ int main(int argc, char ** argv)
     cout<<c.compress()<<endl;c.printBuf();
     cout<<c.compress()<<endl;c.printBuf();
     cout<<c.expand()<<endl;c.printBuf();
-    for(int i=0;i<2147000000;i++); 
-    cout<<"time:"<<m.getTime()<<endl;
-#if 0
-    testManager m;
-    //m.beginTest(10000);
-    m.log(true);
 #endif
+#if 1
+    testManager m;
+    m.addStrategy(new cuckooRing(40000, 4, BOB1, BOB2, BOB3));
+    m.insertTest(100000);
+#endif
+    cout<<"time:"<<t.getTime()<<endl;
     return 0;
 }
 

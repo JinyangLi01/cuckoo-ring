@@ -3,6 +3,7 @@
 testManager::testManager():
 strategySize(0)
 {
+    srand(unsigned(time(0)));
     fin = ifstream("dat/0.dat",ios::in|ios::binary);
 }
 
@@ -24,6 +25,7 @@ bool testManager::addStrategy(cuckoo* s)
 
 int testManager::read()
 {
+    return rand();
     fin.read(readBuf,13);
     readBuf[4]='\0';
     int tmp=0;
@@ -31,14 +33,22 @@ int testManager::read()
     return tmp;
 }
 
-void testManager::beginTest(int updateNum)
+void testManager::insertTest(int updateNum)
 {
     while(updateNum--)
     {
         int n=read();
+        while(keySet.find(n)!=keySet.end())
+            n=read();
+        keySet.insert(n);
         for(auto it=strategyList.begin();it!=strategyList.end();it++)
         {
-            (*it)->insert(n);
+            bool flag=(*it)->insert(n);
+            if(flag==false)
+            {
+                cout<<"INSERT FAIL!"<<endl;
+                return;
+            }
         }
     }
 }

@@ -2,12 +2,15 @@
 #define __TEST_MANAGER_H__
 
 #include "cuckooRing.h"
+#include "dynamicCuckoo.h"
 #include "timer.h"
 
 using namespace std;
 #include <stdio.h>
 #include <vector>
 #include <fstream>
+#include <set>
+#include <ctime>
 
 class testManager
 {
@@ -16,6 +19,7 @@ public:
     vector<cuckoo*> strategyList;
     ifstream fin;        
     char readBuf[105];
+    set<int> keySet;
 
     testManager();
     ~testManager();
@@ -24,7 +28,7 @@ public:
 
     int read(); 
     
-    void beginTest(int updateNum);
+    void insertTest(int updateNum);
 
     void log(bool showDetail=false);
 };
