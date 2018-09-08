@@ -33,7 +33,7 @@ public:
 	};
 	class LinkedCF{
 	public:
-		static int MAXKICK;
+		//static int MAXKICK;
 		int nbucket;
 		int bucketsize;
 		int count;
@@ -187,7 +187,7 @@ public:
 	};
 	class LinkedCFoperator {
 	public:
-		bool operator() (const LinkedCF* &lc, const LinkedCF* &rc) {
+		bool operator() (const LinkedCF* lc, const LinkedCF* rc) {
 			return lc->count < rc->count;
 		}
 	};
@@ -201,7 +201,7 @@ protected:
 	hashFunction hFP; //fingerprint
 	hashFunction hc; //cuckoo hash  
 
-	int MAXKICK = 250;
+	const static int MAXKICK = 250;
 public:
 	dynamicCuckoo(int _nBucket, int _BucketSize, hashFunction _hFP, hashFunction _hc) :
 		nBucket(_nBucket), BucketSize(_BucketSize), hFP(_hFP), hc(_hc) {
@@ -227,7 +227,7 @@ public:
 		}
 		return true;
 	}
-	bool inquiry(int key) {
+	bool lookup(int key) {
 		LinkedCF * tmp = head;
 		while (tmp != NULL) {
 			if (tmp->inquiry(key)) {

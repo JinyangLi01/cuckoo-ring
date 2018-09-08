@@ -39,7 +39,8 @@ int main(int argc, char ** argv)
 #endif
 #if 1
     testManager m;
-    m.addStrategy(new cuckooRing(40000, 4, BOB1, BOB2, BOB3));
+    //m.addStrategy(new cuckooRing(40000, 4, BOB1, BOB2, BOB3));
+    m.addStrategy(new dynamicCuckoo(40000, 4, BOB1, BOB2));
     m.insertTest(100000);
 #endif
     cout<<"time:"<<t.getTime()<<endl;
