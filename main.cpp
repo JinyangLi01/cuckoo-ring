@@ -5,9 +5,9 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-    timer t;
-    t.run();
-#if 1
+    //timer t;
+    //t.run();
+#if 0
     dynamicCuckoo c(16, 4, BOB1, BOB2);
     cout<<c.insert(1)<<endl;c.printBuf();
     cout<<c.insert(2)<<endl;c.printBuf();
@@ -53,12 +53,19 @@ int main(int argc, char ** argv)
     cout<<c.expand()<<endl;c.printBuf();
 #endif
 #if 1
-    testManager m;
-    //m.addStrategy(new cuckooRing(40000, 4, BOB1, BOB2, BOB3));
-    m.addStrategy(new dynamicCuckoo(40000, 4, BOB1, BOB2));
-    m.insertTest(100000);
+    testManager m1,m2;
+    m1.addStrategy(new cuckooRing(40000, 4, BOB1, BOB2, BOB3));
+    m2.addStrategy(new dynamicCuckoo(40000, 4, BOB1, BOB2));
+    timer t1,t2;
+    t1.run();
+    m1.insertTest(100000);
+    t1.pause();
+    t2.run();
+    m2.insertTest(100000);
+    t2.pause();
+    cout<<"time:"<<t1.getTime()<<" "<<t2.getTime()<<endl;
 #endif
-    cout<<"time:"<<t.getTime()<<endl;
+    //cout<<"time:"<<t.getTime()<<endl;
     return 0;
 }
 

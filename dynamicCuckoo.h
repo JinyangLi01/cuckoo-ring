@@ -78,7 +78,7 @@ public:
 		}
 		int getAnotherPos(int pos, uint fp) 
         {
-			return pos ^ fp;
+			return (pos ^ fp) & (hLen-1);
 		}
 
 		bool inquiry(int key) 
