@@ -160,18 +160,20 @@ public:
 				int kickSlot = rand() % bucketsize;
 				int tmpKickP;
 
-				for (int i = 0; i<bucketsize; i++) 
+                int offset=rand()%bucketsize;
+				for (int i = 0; i<bucketsize; i++, offset++) 
                 {
-					int p2 = getAnotherPos(kickP, buc[kickP]->fp[i]);
-					if (kickSlot == i)
+                    if (offset>=bucketsize)offset=0;
+					int p2 = getAnotherPos(kickP, buc[kickP]->fp[offset]);
+					if (kickSlot == offset)
 						tmpKickP = p2;
 					for (int j = 0; j<bucketsize; j++) 
                     {
 						if (!buc[p2]->valid[j]) 
                         {
-							buc[p2]->fp[j] = buc[kickP]->fp[i];
+							buc[p2]->fp[j] = buc[kickP]->fp[offset];
 							buc[p2]->valid[j] = true;
-							buc[kickP]->fp[i] = kickFp;
+							buc[kickP]->fp[offset] = kickFp;
 							count++;
 							return true;
 						}

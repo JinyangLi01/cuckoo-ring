@@ -125,18 +125,20 @@ public:
             int kickSlot=rand()%bSlot;
             int tmpKickP;
 
-            for(int i=0;i<bSlot;i++)
+            int offset=rand()%bSlot;
+            for(int i=0;i<bSlot;i++,offset++)
             {
-                int p2=getAnotherPos(kickP, buf[kickP]->fp[i]);
-                if(kickSlot==i)
+                if(offset>=bSlot)offset=0;
+                int p2=getAnotherPos(kickP, buf[kickP]->fp[offset]);
+                if(kickSlot==offset)
                     tmpKickP=p2;
                 for(int j=0;j<bSlot;j++)
                 {
                     if(!buf[p2]->valid[j])
                     {
-                        buf[p2]->fp[j]=buf[kickP]->fp[i];
+                        buf[p2]->fp[j]=buf[kickP]->fp[offset];
                         buf[p2]->valid[j]=true;
-                        buf[kickP]->fp[i]=kickFp;
+                        buf[kickP]->fp[offset]=kickFp;
                         return true;
                     }
                 }
