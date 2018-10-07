@@ -63,7 +63,7 @@ BOB(const char * str, unsigned int len)
 }
 
 unsigned int 
-OAAT(const unsigned char *str, unsigned int len)
+OAAT(const char *str, unsigned int len)
 {
 	unsigned int   hash, i;
 	for (hash=0, i=0; i<len; ++i)
@@ -80,7 +80,7 @@ OAAT(const unsigned char *str, unsigned int len)
 
 
 unsigned int 
-Simple(const unsigned char * str, unsigned int len)
+Simple(const char * str, unsigned int len)
 {
     unsigned int hash = 0;
 	for(uint i = 0; i < len; i++){
@@ -90,7 +90,7 @@ Simple(const unsigned char * str, unsigned int len)
 }
 
 unsigned int 
-SBOX(const unsigned char * str, unsigned int len)
+SBOX(const char * str, unsigned int len)
 {
 	unsigned int box[]={
 	0xF53E1837, 0x5F14C86B, 0x9EE3964C, 0xFA796D53, 0x32223FC3, 0x4D82BC98, 0xA0C7FA62, 0x63E2C982,
@@ -157,7 +157,7 @@ TWMX( unsigned int a)
 #endif
 
 unsigned int 
-Hsieh (const unsigned char * str, unsigned int len)
+Hsieh (const char * str, unsigned int len)
 {
 	unsigned int hash = len, tmp;
 	int rem;
@@ -204,7 +204,7 @@ Hsieh (const unsigned char * str, unsigned int len)
 }
 
 unsigned int 
-RSHash(const unsigned char * str, unsigned int len)
+RSHash(const char * str, unsigned int len)
 {
     unsigned int b = 378551;
     unsigned int a = 63689;
@@ -219,7 +219,7 @@ RSHash(const unsigned char * str, unsigned int len)
 }
 
 unsigned int 
-JSHash(const unsigned char * str, unsigned int len)
+JSHash(const char * str, unsigned int len)
 {
 	unsigned int hash = 1315423911;  
 	for(uint i = 0; i < len; i++)  
@@ -230,7 +230,7 @@ JSHash(const unsigned char * str, unsigned int len)
 }
 
 unsigned int 
-BKDR(const unsigned char * str, unsigned int len)
+BKDR(const char * str, unsigned int len)
 {	
 	unsigned int seed = 131; // 31 131 1313 13131 131313 etc..  
     unsigned int hash = 0;  
@@ -243,7 +243,7 @@ BKDR(const unsigned char * str, unsigned int len)
 }
 
 unsigned int 
-DJBHash (const unsigned char * str, unsigned int len)
+DJBHash (const char * str, unsigned int len)
 {
     unsigned int hash = 5381;
 	for(uint i = 0; i < len; i++){
@@ -254,7 +254,7 @@ DJBHash (const unsigned char * str, unsigned int len)
 }
 
 unsigned int 
-DEKHash(const unsigned char * str, unsigned int len)   
+DEKHash(const char * str, unsigned int len)   
 {   
     
     unsigned int hash = 1315423911;
@@ -267,7 +267,7 @@ DEKHash(const unsigned char * str, unsigned int len)
 
 // AP Hash 
 unsigned int 
-APHash(const unsigned char *str, unsigned int len)
+APHash(const char *str, unsigned int len)
 {
 	unsigned int hash = 0;
 	
@@ -289,7 +289,7 @@ APHash(const unsigned char *str, unsigned int len)
 }
 
 unsigned int 
-CRC32(const unsigned char * str,unsigned int len)
+CRC32(const char * str,unsigned int len)
 {  
 	unsigned int crctab[256] =
 	{
@@ -338,7 +338,7 @@ CRC32(const unsigned char * str,unsigned int len)
 }
 
 unsigned int
-SDBM(const unsigned char *str, unsigned int len)
+SDBM(const char *str, unsigned int len)
 {
 	unsigned int hash = 0;
 	
@@ -350,7 +350,7 @@ SDBM(const unsigned char *str, unsigned int len)
 }
 
 unsigned int
-OCaml(const unsigned char *str, unsigned int len) 
+OCaml(const char *str, unsigned int len) 
 {
 	unsigned int hash = 0;
 
@@ -362,7 +362,7 @@ OCaml(const unsigned char *str, unsigned int len)
 }
 
 unsigned int
-SML(const unsigned char *str, unsigned int len)
+SML(const char *str, unsigned int len)
 {
 	unsigned int hash = 0;
 
@@ -375,7 +375,7 @@ SML(const unsigned char *str, unsigned int len)
 }
 
 unsigned int
-STL(const unsigned char *str, unsigned int len) 
+STL(const char *str, unsigned int len) 
 {
 	unsigned int hash = 0;
 
@@ -390,7 +390,7 @@ STL(const unsigned char *str, unsigned int len)
 
 
 unsigned int
-FNV32(const unsigned char *str, unsigned int len)
+FNV32(const char *str, unsigned int len)
 {
     //unsigned char *bp = (unsigned char *)str;	/* start of buffer */
     //unsigned char *be = str + len;		/* beyond end of buffer */
@@ -410,7 +410,7 @@ FNV32(const unsigned char *str, unsigned int len)
 
 // P. J. Weinberger Hash Function
 unsigned int
-PJWHash (const unsigned char *str, unsigned int len)
+PJWHash (const char *str, unsigned int len)
 {
     unsigned int BitsInUnignedInt = (unsigned int) (sizeof (unsigned
 							    int) * 8);
@@ -432,7 +432,7 @@ PJWHash (const unsigned char *str, unsigned int len)
 }
 #if 0
 unsigned int
-MD5(const unsigned char *str, unsigned int len)
+MD5(const char *str, unsigned int len)
 {
 	MD5_CTX md5Text;
 	unsigned char messageDegest[16];
@@ -448,7 +448,7 @@ MD5(const unsigned char *str, unsigned int len)
 }
 
 unsigned int
-SHA1(const unsigned char *str, unsigned int len)
+SHA1(const char *str, unsigned int len)
 {
 	SHA1Context sha1Text;
 	unsigned char messageDegest[20];
@@ -465,7 +465,7 @@ SHA1(const unsigned char *str, unsigned int len)
 }
 #endif
 unsigned int 
-BOB1(const unsigned char * str, unsigned int len)
+BOB1(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -508,7 +508,7 @@ BOB1(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB2(const unsigned char * str, unsigned int len)
+BOB2(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -551,7 +551,7 @@ BOB2(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB3(const unsigned char * str, unsigned int len)
+BOB3(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -594,7 +594,7 @@ BOB3(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB4(const unsigned char * str, unsigned int len)
+BOB4(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -637,7 +637,7 @@ BOB4(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB5(const unsigned char * str, unsigned int len)
+BOB5(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -680,7 +680,7 @@ BOB5(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB6(const unsigned char * str, unsigned int len)
+BOB6(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -723,7 +723,7 @@ BOB6(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB7(const unsigned char * str, unsigned int len)
+BOB7(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -766,7 +766,7 @@ BOB7(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB8(const unsigned char * str, unsigned int len)
+BOB8(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -809,7 +809,7 @@ BOB8(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int 
-BOB9(const unsigned char * str, unsigned int len)
+BOB9(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -852,7 +852,7 @@ BOB9(const unsigned char * str, unsigned int len)
 	return c;
 }
 unsigned int
-BOB10(const unsigned char * str, unsigned int len)
+BOB10(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -896,7 +896,7 @@ BOB10(const unsigned char * str, unsigned int len)
 }
 
 unsigned int
-	BOB11(const unsigned char * str, unsigned int len)
+	BOB11(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -940,7 +940,7 @@ unsigned int
 }
 
 unsigned int
-	BOB12(const unsigned char * str, unsigned int len)
+	BOB12(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -984,7 +984,7 @@ unsigned int
 }
 
 unsigned int
-	BOB13(const unsigned char * str, unsigned int len)
+	BOB13(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -1028,7 +1028,7 @@ unsigned int
 }
 
 unsigned int
-	BOB14(const unsigned char * str, unsigned int len)
+	BOB14(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -1072,7 +1072,7 @@ unsigned int
 }
 
 unsigned int
-	BOB15(const unsigned char * str, unsigned int len)
+	BOB15(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -1116,7 +1116,7 @@ unsigned int
 }
 
 unsigned int
-	BOB16(const unsigned char * str, unsigned int len)
+	BOB16(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	unsigned int a,b,c;
@@ -1159,7 +1159,7 @@ unsigned int
 	return c;
 }
 
-uint64 BOB64(const unsigned char * str, unsigned int len)
+uint64 BOB64(const char * str, unsigned int len)
 {
 	//register ub4 a,b,c,len;
 	uint64 a,b,c;

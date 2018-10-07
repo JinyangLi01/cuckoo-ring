@@ -9,6 +9,7 @@ using namespace std;
 #include <assert.h>
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <time.h>
 
@@ -72,24 +73,24 @@ public:
         return pos;
     }
 
-    void getPosByKey(int key, uint&fp, int&p1, int&p2)
+    void getPosByKey(string key, uint&fp, int&p1, int&p2)
     {
-        fp=hFP((uchar*)&key,4);
-        int start=hOffset((uchar*)&fp,4)%bLen;
-        int hashk=hc((uchar*)&key,4)&(hLen-1);
-        int hashfk=hc((uchar*)&fp,4)&(hLen-1);
+        fp=hFP(key.c_str(),4);
+        int start=hOffset((char*)&fp,4)%bLen;
+        int hashk=hc(key.c_str(),4)&(hLen-1);
+        int hashfk=hc((char*)&fp,4)&(hLen-1);
         p1=ring(start+hashk);
         p2=ring(start+(hashk^hashfk));
    }
 
     int getAnotherPos(int pos, uint fp)
     {
-        int start=hOffset((uchar*)&fp,4)%bLen;
-        int hashFk=hc((uchar*)&fp,4)&(hLen-1);
+        int start=hOffset((char*)&fp,4)%bLen;
+        int hashFk=hc((char*)&fp,4)&(hLen-1);
         return ring(start+(ring(pos-start)^hashFk));
     }
 
-    bool insert(int key)
+    bool insert(string key)
     {
         uint fp;
         int p1, p2;
@@ -171,7 +172,7 @@ public:
         return false;
     }
 
-    bool lookup(int key)
+    bool lookup(string key)
     {
         uint fp;
         int p1, p2;
@@ -188,7 +189,7 @@ public:
         return false;
     }
 
-    bool del(int key)
+    bool del(string key)
     {
         uint fp;
         int p1, p2;
@@ -225,11 +226,15 @@ public:
         power--;
     }
 
+    bool lazy_update(){
+        
+    }
     bool resize(int len)
     {
         if(len<=0)
             return false;
-
+        if(len == 2 * bLen)
+            lazy_update();
         //save backup info
         int saveBLen=bLen;
         int saveHLen=hLen;
@@ -257,11 +262,11 @@ public:
                 if(saveBuf[i]->valid[j])
                 {
                     uint transFp=saveBuf[i]->fp[j];
-                    int oldStart=hOffset((uchar*)&transFp,4)%saveBLen;
-                    int newStart=hOffset((uchar*)&transFp,4)%bLen;
+                    int oldStart=hOffset((char*)&transFp,4)%saveBLen;
+                    int newStart=hOffset((char*)&transFp,4)%bLen;
                     int curPos=(i-oldStart+saveBLen)%saveBLen;
                     curPos=curPos&(hLen-1);
-                    int hashFk=hc((uchar*)&transFp,4)&(hLen-1);
+                    int hashFk=hc((char*)&transFp,4)&(hLen-1);
                     int p1=ring(newStart+curPos);
                     int p2=ring(newStart+(curPos^hashFk));
                     suc=insertWithoutKey(transFp,p1,p2);

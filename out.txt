@@ -1,0 +1,13 @@
+average time of each insert(smartCuckoo): 0.000520 ms
+throughput of insert(smartCuckoo)1924.838235 Kips
+load ratio of smartCuckoo :99.860382%
+time cost = 4247.000000
+insert_success_num = 101237
+average time of each insert(cuckooRing): 0.041951 ms
+throughput of insert(cuckooRing)23.837297 Kips
+load ratio of cuckooRing :77.237701%
+time cost = 41.000000
+insert_success_num = 131072
+average time of each insert(CuckooFilter): 0.000313 ms
+throughput of insert(CuckooFilter)3196.878049 Kips
+load ratio of CuckooFilter :100.000000%

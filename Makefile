@@ -1,12 +1,1 @@
-CFLAGS=-g  -Wall --std=c++11
-
-all:test
-
-test:main.o testManager.o hash/hash_function.o
-	g++ ${CFLAGS} -o $@ $+
-
-.cpp.o:
-	g++ -c ${CFLAGS} -o $@ $+
-
-clean:
-	rm -f *.o test hash/*.o
+g++ -std=c++11 main.cpp -o main

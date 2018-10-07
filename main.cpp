@@ -1,71 +1,112 @@
-#include "testManager.h"
+#include "cuckoo.h"
+#include "cuckooRing.h"
+#include "smartCuckoo.h"
+#include "cuckooFilter.h"
+#include "hash/hash_function.h"
 
-using namespace std;
 #include <vector>
+#include <string>
+#include <cstring>
+#include <time.h>
+#include <set>
+using namespace std;
+const int max_num = 1<<17; // equal to 1<<15 * 4
+const int Len = 4;
+char filename[4][100] = {"dat/0.dat", "dat/1.dat", "dat/2.dat", "dat/3.dat"};
+string ele[max_num]; // store different string
+set<string> s;
+int main(int argc, char ** argv){
+    
 
-int main(int argc, char ** argv)
-{
-    //timer t;
-    //t.run();
-#if 0
-    dynamicCuckoo c(16, 4, BOB1, BOB2);
-    cout<<c.insert(1)<<endl;c.printBuf();
-    cout<<c.insert(2)<<endl;c.printBuf();
-    cout<<c.insert(3)<<endl;c.printBuf();
-    cout<<c.insert(4)<<endl;c.printBuf();
-    cout<<c.insert(5)<<endl;c.printBuf();
-    cout<<c.insert(6)<<endl;c.printBuf();
-    cout<<c.insert(7)<<endl;c.printBuf();
-    cout<<c.insert(8)<<endl;c.printBuf();
-    cout<<c.lookup(1)<<endl;c.printBuf();
-    cout<<c.lookup(-1)<<endl;c.printBuf();
-    cout<<c.del(1)<<endl;c.printBuf();
-    cout<<c.lookup(1)<<endl;c.printBuf();
-#endif
-#if 0
-    cuckooRing c(16, 4, BOB1, BOB2, BOB3);
-    cout<<c.insert(1)<<endl;c.printBuf();
-    cout<<c.insert(2)<<endl;c.printBuf();
-    cout<<c.insert(3)<<endl;c.printBuf();
-    cout<<c.insert(4)<<endl;c.printBuf();
-    cout<<c.insert(5)<<endl;c.printBuf();
-    cout<<c.insert(6)<<endl;c.printBuf();
-    cout<<c.insert(7)<<endl;c.printBuf();
-    cout<<c.insert(8)<<endl;c.printBuf();
-    cout<<c.lookup(1)<<endl;c.printBuf();
-    cout<<c.lookup(-1)<<endl;c.printBuf();
-    cout<<c.del(1)<<endl;c.printBuf();
-    cout<<c.lookup(1)<<endl;c.printBuf();
-    cout<<c.resize(10)<<endl;c.printBuf();
-    cout<<c.resize(4)<<endl;c.printBuf();
-    cout<<c.lookup(2)<<endl;
-    cout<<c.lookup(3)<<endl;
-    cout<<c.lookup(4)<<endl;
-    cout<<c.resize(2)<<endl;c.printBuf();
-    cout<<c.resize(14)<<endl;c.printBuf();
-    cout<<c.lookup(2)<<endl;
-    cout<<c.lookup(3)<<endl;
-    cout<<c.lookup(4)<<endl;
-    cout<<c.expand()<<endl;c.printBuf();
-    cout<<c.compress()<<endl;c.printBuf();
-    cout<<c.compress()<<endl;c.printBuf();
-    cout<<c.compress()<<endl;c.printBuf();
-    cout<<c.expand()<<endl;c.printBuf();
-#endif
+// read
+    FILE *fin = NULL;
+    int cnt = 0;
+    char five_tuple[13];
+    for(int i = 0; i < 1; ++i){
+        fin = fopen(filename[i], "rb");
+        while(fread((void *)five_tuple, sizeof(char), 13, fin) == 13){
+            string str = string(five_tuple, Len);
+            if(!s.count(str)){ // assure difference
+                ele[cnt++] = string(five_tuple, Len);
+                if(cnt == max_num)
+                    break;
+            }
+            s.insert(str);
+        }
+        fclose(fin);
+    }
+
+    cuckoo *sC = new smartCuckoo(1<<15, 4, BOB1, BOB2);
+    FILE *wf = fopen("out.txt", "a");
+
+    clock_t time1, time2;
+    int insert_success_num;
+    long long resns;
+    double ave;
+// test smartCuckoo insert time
 #if 1
-    testManager m1,m2;
-    m1.addStrategy(new cuckooRing(40000, 4, BOB1, BOB2, BOB3));
-    m2.addStrategy(new dynamicCuckoo(40000, 4, BOB1, BOB2));
-    timer t1,t2;
-    t1.run();
-    m1.insertTest(100000);
-    t1.pause();
-    t2.run();
-    m2.insertTest(100000);
-    t2.pause();
-    cout<<"time:"<<t1.getTime()<<" "<<t2.getTime()<<endl;
+    time1 = clock();
+    insert_success_num = 0;
+    for(int i = 0; i < max_num; ++i)
+        if(sC->insert(ele[i]))
+            insert_success_num++;
+    time2 = clock();
+    ave = (time2 - time1) / (double)insert_success_num;
+    fprintf(wf, "time cost = %.6lf\n", (double)time2 - time1);
+    fprintf(wf, "insert_success_num = %d\n", insert_success_num);
+    fprintf(wf, "average time of each insert(smartCuckoo): %.6lf ms\n", ave);
+    fprintf(wf, "throughput of insert(smartCuckoo)%.6lf Kips\n", 1.0 / ave);
+
 #endif
-    //cout<<"time:"<<t.getTime()<<endl;
+// test smartCuckoo load ratio
+#if 1
+    fprintf(wf, "load ratio of smartCuckoo :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
+#endif
+
+    cuckoo *cR = new cuckooRing(1<<15, 4, BOB1, BOB2, BOB3);
+// test cuckooRing insert time
+#if 1
+    time1 = clock();
+    insert_success_num = 0;
+    for(int i = 0; i < max_num; ++i)
+        if(cR->insert(ele[i]))
+            insert_success_num++;
+    time2 = clock();
+    ave = (time2 - time1) / (double)insert_success_num; 
+    fprintf(wf, "time cost = %.6lf\n", (double)time2 - time1);
+    fprintf(wf, "insert_success_num = %d\n", insert_success_num);
+    fprintf(wf, "average time of each insert(cuckooRing): %.6lf ms\n", ave);
+    fprintf(wf, "throughput of insert(cuckooRing)%.6lf Kips\n", 1.0 / ave);
+#endif
+// test cuckooRing load ratio
+#if 1
+    fprintf(wf, "load ratio of cuckooRing :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
+#endif
+
+    cuckoo *cF = new cuckooFilter(1<<15, 4, BOB1, BOB2);
+// test cuckooFilter insert time
+#if 1
+    time1 = clock();
+    insert_success_num = 0;
+    for(int i = 0; i < max_num; ++i)
+        if(cF->insert(ele[i]))
+            insert_success_num++;
+    time2 = clock();
+    ave = (time2 - time1) / (double)insert_success_num;
+    fprintf(wf, "time cost = %.6lf\n", (double)time2 - time1);
+    fprintf(wf, "insert_success_num = %d\n", insert_success_num); 
+    fprintf(wf, "average time of each insert(CuckooFilter): %.6lf ms\n", ave);
+    fprintf(wf, "throughput of insert(CuckooFilter)%.6lf Kips\n", 1.0 / ave);
+#endif
+// test cuckooFilter load ratio
+#if 1
+    fprintf(wf, "load ratio of CuckooFilter :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
+#endif
+
+    fclose(wf);
+    delete cR;
+    delete sC;
+    delete cF;
     return 0;
 }
 
