@@ -11,6 +11,8 @@ using namespace std;
 
 class smartCuckoo: public cuckoo{
 public:
+	int same_num;
+
 	class Bucket{
 	public:
 		Bucket(int _size){
@@ -29,6 +31,7 @@ public:
 
 	smartCuckoo(int _L, int _slot, hashFunction _hfp, hashFunction _hpos):
 	L(_L), slot(_slot), hfp(_hfp), hpos(_hpos){
+		same_num = 0;
 		bucket = new Bucket*[L];
 		for(int i = 0; i < L; ++i)
 			bucket[i] = new Bucket(slot);
@@ -51,10 +54,18 @@ public:
 	bool InsertWithoutKey(uint fp, int p1, int p2){
 		// already exist
 		for(int i = 0; i < slot; ++i){
-			if(bucket[p1]->valid[i] && bucket[p1]->fp[i] == fp)
+			if(bucket[p1]->valid[i] && bucket[p1]->fp[i] == fp){
+				same_num++;
+				cout << fp << '\n';
+				cout << same_num << '\n';
 				return true;
-			if(bucket[p2]->valid[i] && bucket[p2]->fp[i] == fp)
+			}
+			if(bucket[p2]->valid[i] && bucket[p2]->fp[i] == fp){
+				same_num++;
+				cout << fp << '\n';
+				cout << same_num << '\n';
 				return true;
+			}
 		}
 		int alter_pos = 0;
 		for(int i = 0; i < slot; ++i){
@@ -82,13 +93,16 @@ public:
 		return false;
 	}
  	bool insert(string key){
- 		uint fp = hfp(key.c_str(), 4) % L;
+ 		uint fp = hfp(key.c_str(), 4);
+		if(fp == 4099916420)
+			cout << fp << '\n';
+
  		int p1 = hpos(key.c_str(), 4) % L;
  		int p2 = (p1 ^ hpos((char*)&fp, 4)) % L;
  		return InsertWithoutKey(fp, p1, p2);
  	}
  	bool lookup(string key){
- 		uint fp = hfp(key.c_str(), 4) % L;
+ 		uint fp = hfp(key.c_str(), 4);
  		int p1 = hpos(key.c_str(), 4) % L;
  		int p2 = (p1 ^ hpos((char*)&fp, 4)) % L;
  		for(int i = 0; i < slot; ++i){

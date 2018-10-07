@@ -99,6 +99,14 @@ public:
     }
     bool insertWithoutKey(uint fp, int p1, int p2)
     {
+        // already exist
+        for(int i=0;i<bSlot;i++)
+        {
+            if(buf[p1]->valid[i] && buf[p1]->fp[i] == fp)
+                return true;
+            if(buf[p2]->valid[i] && buf[p2]->fp[i] == fp)
+                return true;
+        }
         //find empty slot
         for(int i=0;i<bSlot;i++)
         {
@@ -121,7 +129,7 @@ public:
         uint kickFp=fp;
         for(int i=0;i<MAXKICK;i++)
         {
-#if 1
+#if 0
             //random kick with one hop check
             int kickSlot=rand()%bSlot;
             int tmpKickP;
@@ -149,7 +157,7 @@ public:
             kickFp=tmp;
             kickP = tmpKickP;
 #endif
-#if 0
+#if 1
             //random kick
             int kickSlot=rand()%bSlot;
 

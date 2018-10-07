@@ -44,7 +44,7 @@ public:
 		bucket[p]->fp[t] = fp;
 	}
  	bool insert(string key){
- 		uint fp = hfp(key.c_str(), 4) % L;
+ 		uint fp = hfp(key.c_str(), 4);
  		int p1 = hpos(key.c_str(), 4) % L;
  		int p2 = (p1 ^ hpos((char*)&fp, 4)) % L;
  		// already exist
@@ -85,7 +85,7 @@ public:
 		return false;
  	}
  	bool lookup(string key){
- 		uint fp = hfp(key.c_str(), 4) % L;
+ 		uint fp = hfp(key.c_str(), 4);
  		int p1 = hpos(key.c_str(), 4) % L;
  		int p2 = (p1 ^ hpos((char*)&fp, 4)) % L;
  		for(int i = 0; i < slot; ++i){

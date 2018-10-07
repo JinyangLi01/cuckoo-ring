@@ -30,11 +30,12 @@ int main(int argc, char ** argv){
                 ele[cnt++] = string(five_tuple, Len);
                 if(cnt == max_num)
                     break;
+            	s.insert(str);
             }
-            s.insert(str);
         }
         fclose(fin);
     }
+    
 
     cuckoo *sC = new smartCuckoo(1<<15, 4, BOB1, BOB2);
     FILE *wf = fopen("out.txt", "a");
@@ -56,11 +57,11 @@ int main(int argc, char ** argv){
     fprintf(wf, "insert_success_num = %d\n", insert_success_num);
     fprintf(wf, "average time of each insert(smartCuckoo): %.6lf ms\n", ave);
     fprintf(wf, "throughput of insert(smartCuckoo)%.6lf Kips\n", 1.0 / ave);
-
 #endif
 // test smartCuckoo load ratio
 #if 1
     fprintf(wf, "load ratio of smartCuckoo :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
+    fprintf(wf, "\n");
 #endif
 
     cuckoo *cR = new cuckooRing(1<<15, 4, BOB1, BOB2, BOB3);
@@ -81,6 +82,7 @@ int main(int argc, char ** argv){
 // test cuckooRing load ratio
 #if 1
     fprintf(wf, "load ratio of cuckooRing :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
+    fprintf(wf, "\n");
 #endif
 
     cuckoo *cF = new cuckooFilter(1<<15, 4, BOB1, BOB2);
@@ -101,6 +103,7 @@ int main(int argc, char ** argv){
 // test cuckooFilter load ratio
 #if 1
     fprintf(wf, "load ratio of CuckooFilter :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
+    fprintf(wf, "\n");
 #endif
 
     fclose(wf);
