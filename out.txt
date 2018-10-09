@@ -1,72 +1,30 @@
-time cost = 26561.000000
-insert_success_num = 130874
-average time of each insert(smartCuckoo): 0.202951 ms
-throughput of insert(smartCuckoo)4.927299 Kips
-load ratio of smartCuckoo :99.848938%
-
-time cost = 75.000000
-insert_success_num = 131072
-average time of each insert(cuckooRing): 0.000572 ms
-throughput of insert(cuckooRing)1747.626667 Kips
-load ratio of cuckooRing :100.000000%
-
-time cost = 41.000000
-insert_success_num = 131072
-average time of each insert(CuckooFilter): 0.000313 ms
-throughput of insert(CuckooFilter)3196.878049 Kips
-load ratio of CuckooFilter :100.000000%
-
-time cost = 99.000000
-insert_success_num = 130886
-average time of each insert(smartCuckoo): 0.000756 ms
-throughput of insert(smartCuckoo)1322.080808 Kips
-load ratio of smartCuckoo :99.858093%
-
 time cost = 51.000000
-insert_success_num = 131072
-average time of each insert(cuckooRing): 0.000389 ms
-throughput of insert(cuckooRing)2570.039216 Kips
-load ratio of cuckooRing :100.000000%
+insert_success_num = 101013
+average time of each insert(smartCuckoo): 0.000505 ms
+throughput of insert(smartCuckoo)1980.647059 Kips
+load ratio of smartCuckoo :77.066803%
 
-time cost = 44.000000
-insert_success_num = 131072
-average time of each insert(CuckooFilter): 0.000336 ms
-throughput of insert(CuckooFilter)2978.909091 Kips
-load ratio of CuckooFilter :100.000000%
+time cost = 32.000000
+insert_success_num = 101211
+average time of each insert(cuckooRing): 0.000316 ms
+throughput of insert(cuckooRing)3162.843750 Kips
+load ratio of cuckooRing :77.217865%
 
-time cost = 90.000000
-insert_success_num = 130862
-average time of each insert(smartCuckoo): 0.000688 ms
-throughput of insert(smartCuckoo)1454.022222 Kips
-load ratio of smartCuckoo :99.839783%
+time cost = 70.000000
+insert_success_num = 116652
+average time of each insert(smartCuckoo): 0.000600 ms
+throughput of insert(smartCuckoo)1666.457143 Kips
+load ratio of smartCuckoo :88.998413%
 
-time cost = 59.000000
-insert_success_num = 131072
-average time of each insert(cuckooRing): 0.000450 ms
-throughput of insert(cuckooRing)2221.559322 Kips
-load ratio of cuckooRing :100.000000%
+time cost = 176.000000
+insert_success_num = 129075
+average time of each insert(cuckooRing): 0.001364 ms
+throughput of insert(cuckooRing)733.380682 Kips
+load ratio of cuckooRing :98.476410%
 
-time cost = 73.000000
-insert_success_num = 131072
-average time of each insert(CuckooFilter): 0.000557 ms
-throughput of insert(CuckooFilter)1795.506849 Kips
-load ratio of CuckooFilter :100.000000%
-
-time cost = 10865.000000
-insert_success_num = 130862
-average time of each insert(smartCuckoo): 0.083026 ms
-throughput of insert(smartCuckoo)12.044363 Kips
-load ratio of smartCuckoo :99.839783%
-
-time cost = 53.000000
-insert_success_num = 131072
-average time of each insert(cuckooRing): 0.000404 ms
-throughput of insert(cuckooRing)2473.056604 Kips
-load ratio of cuckooRing :100.000000%
-
-time cost = 45.000000
-insert_success_num = 131072
-average time of each insert(CuckooFilter): 0.000343 ms
-throughput of insert(CuckooFilter)2912.711111 Kips
-load ratio of CuckooFilter :100.000000%
+time cost = 135.000000
+insert_success_num = 128565
+average time of each insert(CuckooFilter): 0.001050 ms
+throughput of insert(CuckooFilter)952.333333 Kips
+load ratio of CuckooFilter :98.087311%
 

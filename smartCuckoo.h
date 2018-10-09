@@ -56,14 +56,14 @@ public:
 		for(int i = 0; i < slot; ++i){
 			if(bucket[p1]->valid[i] && bucket[p1]->fp[i] == fp){
 				same_num++;
-				cout << fp << '\n';
-				cout << same_num << '\n';
+				// cout << fp << '\n';
+				// cout << same_num << '\n';
 				return true;
 			}
 			if(bucket[p2]->valid[i] && bucket[p2]->fp[i] == fp){
 				same_num++;
-				cout << fp << '\n';
-				cout << same_num << '\n';
+				// cout << fp << '\n';
+				// cout << same_num << '\n';
 				return true;
 			}
 		}
@@ -94,8 +94,6 @@ public:
 	}
  	bool insert(string key){
  		uint fp = hfp(key.c_str(), 4);
-		if(fp == 4099916420)
-			cout << fp << '\n';
 
  		int p1 = hpos(key.c_str(), 4) % L;
  		int p2 = (p1 ^ hpos((char*)&fp, 4)) % L;

@@ -22,7 +22,7 @@ int main(int argc, char ** argv){
     FILE *fin = NULL;
     int cnt = 0;
     char five_tuple[13];
-    for(int i = 0; i < 1; ++i){
+    for(int i = 0; i < 2; ++i){
         fin = fopen(filename[i], "rb");
         while(fread((void *)five_tuple, sizeof(char), 13, fin) == 13){
             string str = string(five_tuple, Len);
@@ -37,6 +37,9 @@ int main(int argc, char ** argv){
     }
     
 
+    cout << max_num << ' ' << cnt;
+
+
     cuckoo *sC = new smartCuckoo(1<<15, 4, BOB1, BOB2);
     FILE *wf = fopen("out.txt", "a");
 
@@ -48,7 +51,7 @@ int main(int argc, char ** argv){
 #if 1
     time1 = clock();
     insert_success_num = 0;
-    for(int i = 0; i < max_num; ++i)
+    for(int i = 0; i < cnt; ++i)
         if(sC->insert(ele[i]))
             insert_success_num++;
     time2 = clock();
@@ -69,7 +72,7 @@ int main(int argc, char ** argv){
 #if 1
     time1 = clock();
     insert_success_num = 0;
-    for(int i = 0; i < max_num; ++i)
+    for(int i = 0; i < cnt; ++i)
         if(cR->insert(ele[i]))
             insert_success_num++;
     time2 = clock();
@@ -90,7 +93,7 @@ int main(int argc, char ** argv){
 #if 1
     time1 = clock();
     insert_success_num = 0;
-    for(int i = 0; i < max_num; ++i)
+    for(int i = 0; i < cnt; ++i)
         if(cF->insert(ele[i]))
             insert_success_num++;
     time2 = clock();
