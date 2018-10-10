@@ -42,6 +42,8 @@ public:
     ,hFP(_hFP)
     ,hOffset(_hOffset)
     ,hc(_hc)
+    ,memory_access_num(0)
+    ,hop_num(0)
     {
         srand((unsigned)time(NULL));
         buf = new bucket*[_len];
@@ -102,10 +104,18 @@ public:
         // already exist
         for(int i=0;i<bSlot;i++)
         {
-            if(buf[p1]->valid[i] && buf[p1]->fp[i] == fp)
+            if(buf[p1]->valid[i] && buf[p1]->fp[i] == fp){
+                memory_access_num += 2;
                 return true;
-            if(buf[p2]->valid[i] && buf[p2]->fp[i] == fp)
+            }
+            else
+                memory_access_num++;
+            if(buf[p2]->valid[i] && buf[p2]->fp[i] == fp){
+                memory_access_num += 2;
                 return true;
+            }
+            else
+                memory_access_num++;
         }
         //find empty slot
         for(int i=0;i<bSlot;i++)
@@ -114,14 +124,20 @@ public:
             {
                 buf[p1]->fp[i]=fp;
                 buf[p1]->valid[i]=true;
+                memory_access_num += 3;
                 return true;
             }
+            else
+                memory_access_num++;
             if(!buf[p2]->valid[i])
             {
                 buf[p2]->fp[i]=fp;
                 buf[p2]->valid[i]=true;
+                memory_access_num += 3;
                 return true;
             }
+            else
+                memory_access_num++;
         }
 
         //kick
@@ -135,25 +151,31 @@ public:
             int tmpKickP;
 
             int offset=rand()%bSlot;
-            for(int i=0;i<bSlot;i++,offset++)
+            for(int j=0;j<bSlot;j++,offset++)
             {
                 if(offset>=bSlot)offset=0;
                 int p2=getAnotherPos(kickP, buf[kickP]->fp[offset]);
+                memory_access_num++;
+
                 if(kickSlot==offset)
                     tmpKickP=p2;
-                for(int j=0;j<bSlot;j++)
+                for(int k=0;k<bSlot;k++)
                 {
-                    if(!buf[p2]->valid[j])
+                    if(!buf[p2]->valid[k])
                     {
-                        buf[p2]->fp[j]=buf[kickP]->fp[offset];
-                        buf[p2]->valid[j]=true;
+                        buf[p2]->fp[k]=buf[kickP]->fp[offset];
+                        buf[p2]->valid[k]=true;
                         buf[kickP]->fp[offset]=kickFp;
+                        memory_access_num += 4;
                         return true;
                     }
+                    else
+                        memory_access_num++;
                 }
             }
             int tmp=buf[kickP]->fp[kickSlot];
             buf[kickP]->fp[kickSlot]=kickFp;
+            memory_access_num += 2;
             kickFp=tmp;
             kickP = tmpKickP;
 #endif
@@ -164,22 +186,33 @@ public:
             int tmp=buf[kickP]->fp[kickSlot];
             buf[kickP]->fp[kickSlot]=kickFp;
             kickFp=tmp;
-             
+            memory_access_num += 2;
+
             kickP = getAnotherPos(kickP, kickFp);
-            for(int i=0;i<bSlot;i++)
+            for(int j=0;j<bSlot;j++)
             {
-                if(!buf[kickP]->valid[i])
+                if(!buf[kickP]->valid[j])
                 {
-                    buf[kickP]->fp[i]=fp;
-                    buf[kickP]->valid[i]=true;
+                    buf[kickP]->fp[j]=fp;
+                    buf[kickP]->valid[j]=true;
+                    memory_access_num += 3;
+                    hop_num += i;
                     return true;
                 }
+                else
+                    memory_access_num++;
             }
 #endif
         }
         return false;
     }
 
+    int Get_Memory_Access_Num(){
+        return memory_access_num;
+    }
+    int Get_Hop_Num(){
+        return hop_num;
+    }
     bool lookup(string key)
     {
         uint fp;
@@ -340,6 +373,8 @@ protected:
     int bSlot;
     int hLen;
     int hPower;
+    int memory_access_num;
+    int hop_num;
     bucket **buf;
     hashFunction hFP; //fingerprint
     hashFunction hOffset; //starting position

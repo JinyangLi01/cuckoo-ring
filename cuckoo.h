@@ -16,6 +16,8 @@ public:
     virtual bool lookup(string key) = 0;
     virtual bool del(string key) = 0;
     virtual bool resize(int len) = 0;
+    virtual int Get_Memory_Access_Num() = 0;
+    virtual int Get_Hop_Num() = 0;
     virtual~cuckoo(){};
 };
 

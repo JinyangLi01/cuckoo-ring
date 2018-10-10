@@ -1,30 +1,18 @@
-time cost = 51.000000
-insert_success_num = 101013
-average time of each insert(smartCuckoo): 0.000505 ms
-throughput of insert(smartCuckoo)1980.647059 Kips
-load ratio of smartCuckoo :77.066803%
-
-time cost = 32.000000
-insert_success_num = 101211
-average time of each insert(cuckooRing): 0.000316 ms
-throughput of insert(cuckooRing)3162.843750 Kips
-load ratio of cuckooRing :77.217865%
-
-time cost = 70.000000
-insert_success_num = 116652
-average time of each insert(smartCuckoo): 0.000600 ms
-throughput of insert(smartCuckoo)1666.457143 Kips
-load ratio of smartCuckoo :88.998413%
-
-time cost = 176.000000
-insert_success_num = 129075
-average time of each insert(cuckooRing): 0.001364 ms
-throughput of insert(cuckooRing)733.380682 Kips
-load ratio of cuckooRing :98.476410%
-
-time cost = 135.000000
-insert_success_num = 128565
-average time of each insert(CuckooFilter): 0.001050 ms
-throughput of insert(CuckooFilter)952.333333 Kips
-load ratio of CuckooFilter :98.087311%
-
+memory_access_num of(smartCuckoo) is 2614029
+hop_num of(smartCuckoo) is 112060
+memory_access_num of(cuckooRing) is 1687549
+hop_num of(cuckooRing) is 7443
+memory_access_num of(cuckooFilter) is 1724333
+hop_num of(cuckooFilter) is 10744
+memory_access_num of(smartCuckoo) is 2614499
+hop_num of(smartCuckoo) is 112153
+memory_access_num of(cuckooRing) is 1690077
+hop_num of(cuckooRing) is 7637
+memory_access_num of(cuckooFilter) is 1699657
+hop_num of(cuckooFilter) is 7447
+memory_access_num of(smartCuckoo) is 3434960
+hop_num of(smartCuckoo) is 116683
+memory_access_num of(cuckooRing) is 6394058
+hop_num of(cuckooRing) is 266547
+memory_access_num of(cuckooFilter) is 8235648
+hop_num of(cuckooFilter) is 279687

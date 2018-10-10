@@ -29,7 +29,8 @@ public:
 	};
 
 	cuckooFilter(int _L, int _slot, hashFunction _hfp, hashFunction _hpos):
-	L(_L), slot(_slot), hfp(_hfp), hpos(_hpos){
+	L(_L), slot(_slot), hfp(_hfp), hpos(_hpos), memory_access_num(0),
+	hop_num(0){
 		bucket = new Bucket*[L];
 		for(int i = 0; i < L; ++i)
 			bucket[i] = new Bucket(slot);
@@ -42,6 +43,7 @@ public:
 	void Write(int p, int t, uint fp){
 		bucket[p]->valid[t] = 1;
 		bucket[p]->fp[t] = fp;
+		memory_access_num += 2;
 	}
  	bool insert(string key){
  		uint fp = hfp(key.c_str(), 4);
@@ -49,21 +51,33 @@ public:
  		int p2 = (p1 ^ hpos((char*)&fp, 4)) % L;
  		// already exist
  		for(int i = 0; i < slot; ++i){
-			if(bucket[p1]->valid[i] && bucket[p1]->fp[i] == fp)
+			if(bucket[p1]->valid[i] && bucket[p1]->fp[i] == fp){
+				memory_access_num += 2;
 				return true;
-			if(bucket[p2]->valid[i] && bucket[p2]->fp[i] == fp)
+			}
+			else 
+				memory_access_num++;
+			if(bucket[p2]->valid[i] && bucket[p2]->fp[i] == fp){
+				memory_access_num += 2;
 				return true;
+			}
+			else
+				memory_access_num++;
 		}
 		// find empty slot
 		for(int i = 0; i < slot; ++i){
 			if(bucket[p1]->valid[i] == 0){
+				memory_access_num++;
 				Write(p1, i, fp);
 				return true;
 			}
 			else if(bucket[p2]->valid[i] == 0){
+				memory_access_num += 2;
 				Write(p2, i, fp);
 				return true;
 			}
+			else
+				memory_access_num += 2;
 		}
 		// kick
         srand((unsigned)time(NULL));
@@ -71,15 +85,20 @@ public:
 		for(int i = 0; i < max_kick; ++i){
 			t = rand() % slot;
 			_fp = bucket[p1]->fp[t];
+			memory_access_num++;
 			Write(p1, t, fp);
 			// find alternative postion
 			p1 = (hpos((char*)&_fp, 4)^p1) % L;
 			fp = _fp;
 			for(int j = 0; j < slot; ++j){
 				if(bucket[p1]->valid[j] == 0){
+					memory_access_num++;
 					Write(p1, j, fp);
+					hop_num += i;
 					return true;
 				}
+				else
+					memory_access_num++;
 			}
 		}
 		return false;
@@ -98,10 +117,17 @@ public:
  	}
 	bool del(string key){}
 	bool resize(int len){}
-
+	int Get_Memory_Access_Num(){
+		return memory_access_num;
+	}
+	int Get_Hop_Num(){
+		return hop_num;
+	}
 
 private:
 	int L, slot;
+	int memory_access_num;
+	int hop_num;
 	Bucket **bucket;
 	hashFunction hfp;
 	hashFunction hpos;
