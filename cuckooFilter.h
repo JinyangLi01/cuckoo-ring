@@ -51,12 +51,12 @@ public:
 		int y = (hpos((char*)&fp, 4)^p) % L;
 		for(int i = 0; i < slot; ++i)
 			if(bucket[y]->valid[i] == 0){
-				memory_access_num++;
+				if(!i) memory_access_num++;
 				alter_pos = i;
 				return true;
 			}
 			else
-				memory_access_num++;
+				if(!i) memory_access_num++;
 		return false;		
 	}
  	bool insert(string key){
@@ -66,34 +66,34 @@ public:
  		// already exist
  		for(int i = 0; i < slot; ++i){
 			if(bucket[p1]->valid[i] && bucket[p1]->fp[i] == fp){
-				memory_access_num += 2;
+				if(!i) memory_access_num += 2;
 				return true;
 			}
 			else 
-				memory_access_num++;
+				if(!i) memory_access_num++;
 			if(bucket[p2]->valid[i] && bucket[p2]->fp[i] == fp){
-				memory_access_num += 2;
+				if(!i) memory_access_num += 2;
 				return true;
 			}
 			else
-				memory_access_num++;
+				if(!i) memory_access_num++;
 		}
 		// find empty slot
 		for(int i = 0; i < slot; ++i){
 			if(bucket[p1]->valid[i] == 0){
-				memory_access_num++;
+				if(!i) memory_access_num++;
 				Write(p1, i, fp);
 				return true;
 			}
 			else if(bucket[p2]->valid[i] == 0){
-				memory_access_num += 2;
+				if(!i) memory_access_num += 2;
 				Write(p2, i, fp);
 				return true;
 			}
 			else
-				memory_access_num += 2;
+				if(!i) memory_access_num += 2;
 		}
-// optimize
+// optimize 
 #if 1	
 		int alter_pos = 0;
 		for(int i = 0; i < slot; ++i){
@@ -105,6 +105,7 @@ public:
 				bucket[y]->valid[x] = 1;
 				bucket[p1]->fp[i] = fp;
 				bucket[p1]->valid[i] = 1;
+				memory_access_num += 5;
 				hop_num++;
 				return true;
 			}
@@ -116,12 +117,12 @@ public:
 				bucket[y]->valid[x] = 1;
 				bucket[p2]->fp[i] = fp;
 				bucket[p2]->valid[i] = 1;
+				memory_access_num += 5;
 				hop_num++;
 				return true;
 			}
 		}
 #endif
-
 
 		// kick
         srand((unsigned)time(NULL));
@@ -136,13 +137,13 @@ public:
 			fp = _fp;
 			for(int j = 0; j < slot; ++j){
 				if(bucket[p1]->valid[j] == 0){
-					memory_access_num++;
+					if(!j) memory_access_num++;
 					Write(p1, j, fp);
 					hop_num += i;
 					return true;
 				}
 				else
-					memory_access_num++;
+					if(!j) memory_access_num++;
 			}
 		}
 		return false;
