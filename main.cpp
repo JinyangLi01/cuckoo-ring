@@ -1,13 +1,16 @@
 #include "cuckoo.h"
 #include "cuckooRing.h"
+#include "cuckooRingS.h"
 #include "smartCuckoo.h"
 #include "cuckooFilter.h"
+#include "dynamicCuckoo.h"
 #include "hash/hash_function.h"
 
 #include <vector>
 #include <string>
 #include <cstring>
 #include <time.h>
+#include <algorithm>
 #include <set>
 using namespace std;
 const int max_num = 1<<17; // equal to 1<<15 * 4
@@ -86,7 +89,7 @@ int main(int argc, char ** argv){
 // test FP
     fprintf(wf, "FP of (smartCuckoo) %.6lf\n", (double)2 * exist_num / cnt);
 #endif
-#if 1
+#if 0
 // test memory_access_num
     fprintf(wf, "memory_access_num of(smartCuckoo) is %d\n", sC->Get_Memory_Access_Num());
     fprintf(wf, "hop_num of(smartCuckoo) is %d\n", sC->Get_Hop_Num());
@@ -121,7 +124,7 @@ int main(int argc, char ** argv){
 // test FP
     fprintf(wf, "FP of (cuckooRing) %.6lf\n", (double)2 * exist_num / cnt);
 #endif
-#if 1
+#if 0
     // test memory_access_num
     fprintf(wf, "memory_access_num of(cuckooRing) is %d\n", cR->Get_Memory_Access_Num());
     fprintf(wf, "hop_num of(cuckooRing) is %d\n", cR->Get_Hop_Num());
@@ -157,7 +160,7 @@ int main(int argc, char ** argv){
 // test FP
     fprintf(wf, "FP of (cuckooFilter) %.6lf\n", (double)2 * exist_num / cnt);
 #endif
-#if 1
+#if 0
     // test memory_access_num
     fprintf(wf, "memory_access_num of(cuckooFilter) is %d\n", cF->Get_Memory_Access_Num());
     fprintf(wf, "hop_num of(cuckooFilter) is %d\n", cF->Get_Hop_Num());
@@ -169,10 +172,46 @@ int main(int argc, char ** argv){
     fprintf(wf, "\n");
 #endif
 
+#if 0
+// test resize speed
+// 
+    cuckooRingS *cRS = new cuckooRingS(1<<15, 4, BOB1, BOB2, BOB3);
+    dynamicCuckoo  *dC = new dynamicCuckoo(1<<15, 4, BOB1, BOB2);
+
+    for(int i = 0; i < cnt; ++i){
+        if(!dC->insert(ele[i])){
+            cout << "i = " << i;
+            break;
+        }
+        cRS->insert(ele[i]);
+    }
+    time1 = clock();
+    cout << "time1 = " << time1 << ' ';
+    cRS->expand();
+    time2 = clock();
+    cout << "time2 = " << time2 << ' ';
+    cout << "time2 - time1 = " << time2 - time1 << ' ';
+#endif
+
+// test lookup time
+    cuckooRingS *cRS = new cuckooRingS(1<<15, 4, BOB1, BOB2, BOB3);
+    for(int i = 0; i < cnt / 2; ++i)
+        cRS->insert(ele[i]);
+    sort(ele, ele + cnt);
+    time1 = clock();
+    for(int i = 0; i < cnt; ++i)
+        cRS->lookup(ele[i]);
+    time2 = clock();
+
+    printf("cnt = %d lookup time(ms) = %d ave lookup time(ms) %.6lf\n", cnt, time2 - time1, (double)(time2 - time1) / cnt);
+
+
     fclose(wf);
     delete cR;
     delete sC;
     delete cF;
+    delete cRS;
+    // delete dC;
     return 0;
 }
 
