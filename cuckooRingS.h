@@ -16,7 +16,6 @@ using namespace std;
 class cuckooRingS:public cuckoo
 {
 public:
-
     cuckooRingS(int _len, int _slot,
         hashFunction _hFP, hashFunction _hOffset, hashFunction _hc)
     :bLen(_len)
@@ -113,6 +112,34 @@ public:
         return false;
     }
 
+/*    
+    bool removeCopyCheck(int p)
+    {
+        if(!isExpanded)
+            return false;
+        int bufPos=getIndex(p, 0);
+        for(int i=0;i<bSlot;i++)
+        {
+            if(valid[bufPos+i] && copy[bufPos+i])
+            {
+                uint fp=buf[bufPos+i];
+            }
+        }
+    }*/
+    bool EmptyAlternative(int p, int t, int &alter_pos){
+        uint fp = bucket[p]->fp[t];
+        memory_access_num++;
+        int y = (hpos((char*)&fp, 4)^p) % L;
+        for(int i = 0; i < slot; ++i)
+            if(bucket[y]->valid[i] == 0){
+                memory_access_num++;
+                alter_pos = i;
+                return true;
+            }
+            else
+                memory_access_num++;
+        return false;       
+    }
     bool insert(string key)
     {
         uint fp;
@@ -170,6 +197,7 @@ public:
             else
                 memory_access_num++;
         }
+
 
         //kick
         int kickP=rand()%2==0?p1:p2;
@@ -265,19 +293,31 @@ public:
         int bufPos2=getIndex(p2, 0); 
         for(int i=0;i<bSlot;i++)
         {
-            if(valid[bufPos1+i] && buf[bufPos1+i]==fp)
+            if(valid[bufPos1+i])
             {
-                //remove copy
-                // if(isExpanded && copy[bufPos1+i])
-                //     removeCopy(fp, p1, p2);
-                return true;
+                int bfp=buf[bufPos1+i];
+                if(bfp==fp)
+                {
+                    //remove copy
+                    // if(isExpanded && copy[bufPos1+i])
+                    //     removeCopy(fp, p1, p2);
+                    return true;
+                }
+                if(isExpanded && copy[bufPos1+i])
+                    removeCopy(bfp, p1, getAnotherPos(p1, fp));
             }
-            if(valid[bufPos2+i] && buf[bufPos2+i]==fp)
+            if(valid[bufPos2+i])
             {
-                //remove copy
-                // if(isExpanded && copy[bufPos2+i])
-                //     removeCopy(fp, p1, p2);
-                return true;
+                int bfp=buf[bufPos2+i];
+                if(bfp==fp)
+                {
+                    //remove copy
+                    // if(isExpanded && copy[bufPos2+i])
+                    //     removeCopy(fp, p1, p2);
+                    return true;
+                }
+                if(isExpanded && copy[bufPos2+i])
+                    removeCopy(bfp, p2, getAnotherPos(p2, fp));
             }
         }
         return false;
@@ -332,10 +372,17 @@ public:
         power--;
     }
 
+    bool resize(int len)
+    {
+        if(len!=2*bLen)
+            return false;
+        return expand();
+    }
+
     bool expand()
     {
-        // if(isExpanded)
-        //     return false;
+        if(isExpanded)
+            return false;
         isExpanded=true;
         
         int len = 2 * bLen;
@@ -359,31 +406,16 @@ public:
         buf = new uint[tSize];
         valid = new bool[tSize];
         copy = new bool[tSize];
-        memset(buf, 0, sizeof(buf));
 
         //transfer
         int saveSize = saveBLen * bSlot;
         int s1 = saveSize * sizeof(uint), s2 = saveSize * sizeof(bool);
-
-        // for(int i = 0; i < saveSize; ++i)
-        // 	buf[i] = saveBuf[i];
-        // for(int i = saveSize; i < 2 * saveSize; ++i)
-        // 	buf[i] = saveBuf[i - saveSize];
-        // for(int i = 0; i < saveSize; ++i)
-        // 	valid[i] = saveValid[i];
-        // for(int i = saveSize; i < 2 * saveSize; ++i)
-        // 	valid[i] = saveValid[i - saveSize];
-        // for(int i = 0; i < saveSize; ++i)
-        // 	copy[i] = saveCopy[i];
-        // for(int i = saveSize; i < 2 * saveSize; ++i)
-        // 	copy[i] = saveCopy[i - saveSize];
-
-        memcpy((char *)buf, (char *)saveBuf, s1);
-        memcpy((char *)buf + s1, (char *)saveBuf, s1);
-        memcpy((char *)valid, (char *)saveValid, s2);
-        memcpy((char *)valid + s2, (char *)saveValid, s2);
-        memcpy((char *)copy, (char *)saveCopy, s2);
-        memcpy((char *)copy + s2, (char *)saveCopy, s2);
+        memcpy((char*)buf, (char*)saveBuf, s1);
+        memcpy((char*)buf + s1, (char*)saveBuf, s1);
+        memcpy((char*)valid, (char*)saveValid, s2);
+        memcpy((char*)valid + s2, (char*)saveValid, s2);
+        memcpy((char*)copy, (char*)saveCopy, s2);
+        memcpy((char*)copy + s2, (char*)saveCopy, s2);
 /*
         if(false)
         {
@@ -422,7 +454,6 @@ public:
             cout<<endl;
         }
     }
-    bool resize(int len){}
 protected:
     int bLen;
     int bSlot;

@@ -45,6 +45,20 @@ public:
 		bucket[p]->fp[t] = fp;
 		memory_access_num += 2;
 	}
+	bool EmptyAlternative(int p, int t, int &alter_pos){
+		uint fp = bucket[p]->fp[t];
+		memory_access_num++;
+		int y = (hpos((char*)&fp, 4)^p) % L;
+		for(int i = 0; i < slot; ++i)
+			if(bucket[y]->valid[i] == 0){
+				memory_access_num++;
+				alter_pos = i;
+				return true;
+			}
+			else
+				memory_access_num++;
+		return false;		
+	}
  	bool insert(string key){
  		uint fp = hfp(key.c_str(), 4);
  		int p1 = hpos(key.c_str(), 4) % L;
@@ -79,6 +93,36 @@ public:
 			else
 				memory_access_num += 2;
 		}
+// optimize
+#if 1	
+		int alter_pos = 0;
+		for(int i = 0; i < slot; ++i){
+			if(alternative(p1, i, alter_pos)){
+				uint _fp = bucket[p1]->fp[i];
+				int x = alter_pos;
+				int y = (hpos((char*)&_fp, 4)^p1) % L;
+				bucket[y]->fp[x] = _fp;
+				bucket[y]->valid[x] = 1;
+				bucket[p1]->fp[i] = fp;
+				bucket[p1]->valid[i] = 1;
+				hop_num++;
+				return true;
+			}
+			if(alternative(p2, i, alter_pos)){
+				uint _fp = bucket[p2]->fp[i];
+				int x = alter_pos;
+				int y = (hpos((char*)&_fp, 4)^p2) % L;
+				bucket[y]->fp[x] = _fp;
+				bucket[y]->valid[x] = 1;
+				bucket[p2]->fp[i] = fp;
+				bucket[p2]->valid[i] = 1;
+				hop_num++;
+				return true;
+			}
+		}
+#endif
+
+
 		// kick
         srand((unsigned)time(NULL));
         int _fp, t;

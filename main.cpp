@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <set>
 using namespace std;
-const int max_num = 1<<17; // equal to 1<<15 * 4
+const int max_num = 1<<19; // equal to 1<<15 * 4
 const int Len = 4;
 char filename[4][100] = {"dat/0.dat", "dat/1.dat", "dat/2.dat", "dat/3.dat"};
 string ele[max_num]; // store different string
@@ -194,10 +194,11 @@ int main(int argc, char ** argv){
 #endif
 
 // test lookup time
-    cuckooRingS *cRS = new cuckooRingS(1<<15, 4, BOB1, BOB2, BOB3);
+    cuckooRingS *cRS = new cuckooRingS(1<<17, 4, BOB1, BOB2, BOB3);
     for(int i = 0; i < cnt / 2; ++i)
         cRS->insert(ele[i]);
     sort(ele, ele + cnt);
+    cRS->expand();
     time1 = clock();
     for(int i = 0; i < cnt; ++i)
         cRS->lookup(ele[i]);
