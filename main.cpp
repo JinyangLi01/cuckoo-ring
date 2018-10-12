@@ -18,8 +18,34 @@ const int Len = 4;
 char filename[4][100] = {"dat/0.dat", "dat/1.dat", "dat/2.dat", "dat/3.dat"};
 string ele[max_num]; // store different string
 set<string> s;
+void basicTest(int cnt)
+{
+    int len=60000;
+    cuckoo *cR = new cuckooRing(len, 4, BOB1, BOB2, BOB3);
+    int insertNum = 0;
+    int existNum1 = 0;
+    int existNum2 = 0;
+    for(int i = 0; i < cnt; ++i)
+    {
+        if(cR->lookup(ele[i]))
+            printf("fingerprints collide!");
+        if(cR->insert(ele[i]))
+            insertNum++;
+        else printf("insert failure!\n");
+    }
+    for(int i = 0; i < cnt; ++i)
+        if(cR->lookup(ele[i]))
+            existNum1++;
+        else
+            printf("element(%d) not found.\n",ele[i]);
+    cR->resize(len * 2);
+    for(int i = 0; i < cnt; ++i)
+        if(cR->lookup(ele[i]))
+            existNum2++;
+    printf("basic test:cnt:%d, insert:%d, lookup1:%d, lookup2:%d\n",
+        cnt, insertNum, existNum1, existNum2);
+}
 int main(int argc, char ** argv){
-    
 
 // read
 #if 0
@@ -57,6 +83,10 @@ int main(int argc, char ** argv){
     	}
     }
 #endif
+
+
+    basicTest(cnt);
+
     cout << max_num << ' ' << cnt << '\n';
 
 

@@ -12,6 +12,7 @@ using namespace std;
 #include <cstring>
 #include <vector>
 #include <time.h>
+#include <assert.h>
 
 class cuckooRingS:public cuckoo
 {
@@ -32,8 +33,6 @@ public:
         memset(buf, 0, tSize * sizeof(uint));
         valid = new bool[tSize];
         memset(valid, 0, tSize * sizeof(bool));
-        copy = new bool[tSize];
-        memset(copy, 0, tSize * sizeof(bool));
 
         isExpanded = false;
 
@@ -52,7 +51,8 @@ public:
     {
         delete [] buf;
         delete [] valid;
-        delete [] copy;
+        if(copy!=NULL)
+            delete [] copy;
     }
 
     inline int getIndex(int pos, int slot)
@@ -85,31 +85,29 @@ public:
         return ring(start+(ring(pos-start)^hashFk));
     }
 
-    bool removeCopy(uint fp, int p1, int p2)
+    void removeCopy(int pos)
     {
         if(!isExpanded)
-            return false;
-        int cp1 = ring(p1 + bLen/2);
-        int cp2 = ring(p2 + bLen/2);
+            return;
+        assert(copy!=NULL);
+        if(copy[pos])
+            return;
 
-        int bufPos1=getIndex(cp1, 0);
-        int bufPos2=getIndex(cp2, 0);  
+        int bufPos=getIndex(pos, 0);
+        if(!valid[bufPos] && !copy[bufPos])
         for(int i=0;i<bSlot;i++)
         {
-            if(valid[bufPos1+i] && buf[bufPos1+i]==fp)
-            {
-                valid[bufPos1+i]=false;
-                copy[bufPos1+i]=false;
-                return true;
-            }
-            if(valid[bufPos2+i] && buf[bufPos2+i]==fp)
-            {
-                valid[bufPos2+i]=false;
-                copy[bufPos2+i]=false;
-                return true;
-            }
+            if(!valid[bufPos+i])
+                continue;
+            uint fp=buf[bufPos+i];
+            int start=hOffset((char*)&fp,4)%bLen;
+            int offset=ring(pos-start);        
+            if(offset<hLen)
+                copy[bufPos+i]=0;
+            else
+                valid[bufPos+i]=0;               
         }
-        return false;
+        copy[pos]=true;
     }
 
     bool insert(string key)
@@ -123,21 +121,20 @@ public:
     {
         int bufPos1=getIndex(p1, 0);
         int bufPos2=getIndex(p2, 0);
+        removeCopy(p1);
+        removeCopy(p2);
+
         // already exist
         for(int i=0;i<bSlot;i++)
         {
             if(valid[bufPos1+i] && buf[bufPos1+i] == fp){
                 memory_access_num += 2;
-                if(isExpanded && copy[bufPos1+i])
-                    removeCopy(fp, p1, p2);
                 return true;
             }
             else
                 memory_access_num++;
             if(valid[bufPos2+i] && buf[bufPos2+i] == fp){
                 memory_access_num += 2;
-                if(isExpanded && copy[bufPos2+i])
-                    removeCopy(fp, p1, p2);
                 return true;
             }
             else
@@ -150,8 +147,6 @@ public:
             {
                 buf[bufPos1+i]=fp;
                 valid[bufPos1+i]=true;
-                if(!isExpanded)
-                    copy[bufPos1+i]=true;
                 memory_access_num += 3;
                 return true;
             }
@@ -161,8 +156,6 @@ public:
             {
                 buf[bufPos2+i]=fp;
                 valid[bufPos2+i]=true;
-                if(!isExpanded)
-                    copy[bufPos2+i]=true;
                 memory_access_num += 3;
                 return true;
             }
@@ -185,10 +178,7 @@ public:
             {
                 if(offset>=bSlot)offset=0;
                 int p2=getAnotherPos(kickP, buf[getIndex(kickP, offset)]);
-                //remove copy
-                if(isExpanded && copy[getIndex(kickP, offset)])
-                    removeCopy(buf[getIndex(kickP, offset)], kickP, p2);
- 
+                removeCopy(p2); 
                 int bufPos=getIndex(p2, 0);
                 memory_access_num++;
 
@@ -221,8 +211,7 @@ public:
             int tmp=buf[getIndex(kickP, kickSlot)];
             int kickP2=getAnotherPos(kickP, tmp);
             //remove copy
-            if(isExpanded && copy[getIndex(kickP, kickSlot)])
-                removeCopy(tmp, kickP, kickP2);
+            removeCopy(kickP2);
 
             buf[getIndex(kickP, kickSlot)]=kickFp;
             kickFp=tmp;
@@ -259,37 +248,19 @@ public:
         int p1, p2;
         getPosByKey(key, fp, p1, p2);
 
+        //remove copy
+        removeCopy(p1);
+        removeCopy(p2);
+
         //find
         int bufPos1=getIndex(p1, 0);
         int bufPos2=getIndex(p2, 0); 
         for(int i=0;i<bSlot;i++)
         {
-            if(valid[bufPos1+i])
-            {
-                int bfp=buf[bufPos1+i];
-                if(bfp==fp)
-                {
-                    //remove copy
-                    if(isExpanded && copy[bufPos1+i])
-                        removeCopy(fp, p1, p2);
-                    return true;
-                }
-                if(isExpanded && copy[bufPos1+i])
-                    removeCopy(bfp, p1, getAnotherPos(p1, fp));
-            }
-            if(valid[bufPos2+i])
-            {
-                int bfp=buf[bufPos2+i];
-                if(bfp==fp)
-                {
-                    //remove copy
-                    if(isExpanded && copy[bufPos2+i])
-                        removeCopy(fp, p1, p2);
-                    return true;
-                }
-                if(isExpanded && copy[bufPos2+i])
-                    removeCopy(bfp, p2, getAnotherPos(p2, fp));
-            }
+            if(valid[bufPos1+i] && buf[bufPos1+i]==fp)
+                return true;
+            if(valid[bufPos2+i] && buf[bufPos2+i]==fp)
+                return true;
         }
         return false;
     }
@@ -300,6 +271,10 @@ public:
         int p1, p2;
         getPosByKey(key, fp, p1, p2);
 
+        //remove copy
+        removeCopy(p1);
+        removeCopy(p2);
+
         //find
         int bufPos1=getIndex(p1, 0);
         int bufPos2=getIndex(p2, 0);  
@@ -308,21 +283,11 @@ public:
             if(valid[bufPos1+i] && buf[bufPos1+i]==fp)
             {
                 valid[bufPos1+i]=false;
-                if(isExpanded && copy[bufPos1+i])
-                {
-                    removeCopy(fp, p1, p2);
-                    copy[bufPos1+i]=false;
-                }
                 return true;
             }
             if(valid[bufPos2+i] && buf[bufPos2+i]==fp)
             {
                 valid[bufPos2+i]=false;
-                if(isExpanded && copy[bufPos2+i])
-                {
-                    removeCopy(fp, p1, p2);
-                    copy[bufPos2+i]=false;
-                }
                 return true;
             }
         }
@@ -363,7 +328,6 @@ public:
         int saveHPower=hPower;
         uint*saveBuf=buf;
         bool*saveValid=valid;
-        bool*saveCopy=copy;
         
         //new space
         bLen=len;
@@ -376,7 +340,7 @@ public:
         int tSize=len * bSlot;
         buf = new uint[tSize];
         valid = new bool[tSize];
-        copy = new bool[tSize];
+        copy = new bool[len];
 
         //transfer
         int saveSize = saveBLen * bSlot;
@@ -385,27 +349,10 @@ public:
         memcpy((char*)buf + s1, (char*)saveBuf, s1);
         memcpy((char*)valid, (char*)saveValid, s2);
         memcpy((char*)valid + s2, (char*)saveValid, s2);
-        memcpy((char*)copy, (char*)saveCopy, s2);
-        memcpy((char*)copy + s2, (char*)saveCopy, s2);
-/*
-        if(false)
-        {
-            delete [] buf;
-            delete [] valid;
-            delete [] copy;
-            //load backup info
-            buf = saveBuf;
-            valid = saveValid;
-            copy = saveCopy;
-            bLen = saveBLen;
-            hLen = saveHLen;
-            hPower = saveHPower;
-            return false;
-        }
-*/
+        memset(copy, 0, len*sizeof(bool));
+
         delete [] saveBuf;
         delete [] saveValid;
-        delete [] saveCopy;
         return true;
     }
 
