@@ -16,25 +16,6 @@ using namespace std;
 class dynamicCuckoo: public cuckoo
 {
 public:
-    class bucket 
-    {
-    public:
-        bucket(int _size) 
-        {
-            fp = new uint[_size];
-            memset(fp, 0, _size * sizeof(uint));
-            valid = new bool[_size];
-            memset(valid, 0, _size * sizeof(bool));
-        }
-        bucket() {}
-        ~bucket() 
-        {
-            delete[] fp;
-            delete[] valid;
-        }
-        uint * fp;
-        bool * valid;
-    };
     class LinkedCF
     {
     public:
@@ -46,7 +27,8 @@ public:
         hashFunction hFP;
         hashFunction hc;
         LinkedCF * nextCF;
-        bucket ** buc;
+        uint *buf;
+        bool *valid;
         LinkedCF(int _nbucket, int _bucketsize, hashFunction _hFP, hashFunction _hc, LinkedCF * _nextCF = NULL) 
         :nbucket(_nbucket)
         ,bucketsize(_bucketsize)
@@ -54,9 +36,9 @@ public:
         ,hc(_hc)
         ,nextCF(_nextCF) 
         {
-            buc = new bucket * [nbucket];
-            for (int i = 0; i < nbucket; i++)
-                buc[i] = new bucket(_bucketsize);
+            int tSize = _nbucket * _bucketsize;
+            buf = new uint[tSize];
+            valid = new bool[tSize];
             hLen=1;
             while(hLen<=nbucket)
                 hLen*=2;
@@ -65,8 +47,12 @@ public:
         }
         virtual ~LinkedCF()
         {
-            if (buc != NULL)
-                delete[] buc;
+            delete[] buf;
+            delete[] valid;
+        }
+        inline int getIndex(int pos, int slot)
+        {
+            return pos*bucketsize + slot;
         }
     public:
         void getPosByKey(string key, uint&fp, int&p1, int&p2) 
@@ -88,11 +74,13 @@ public:
             getPosByKey(key, fp, p1, p2);
 
             //find
+            int bufPos1=getIndex(p1, 0);
+            int bufPos2=getIndex(p2, 0);
             for (int i = 0; i<bucketsize; i++) 
             {
-                if (buc[p1]->valid[i] && buc[p1]->fp[i] == fp)
+                if(valid[bufPos1+i] && buf[bufPos1+i] == fp)
                     return true;
-                if (buc[p2]->valid[i] && buc[p2]->fp[i] == fp)
+                if(valid[bufPos2+i] && buf[bufPos2+i] == fp)
                     return true;
             }
             return false;
@@ -104,17 +92,19 @@ public:
             getPosByKey(key, fp, p1, p2);
 
             //find
+            int bufPos1=getIndex(p1, 0);
+            int bufPos2=getIndex(p2, 0);
             for (int i = 0; i<bucketsize; i++) 
             {
-                if (buc[p1]->valid[i] && buc[p1]->fp[i] == fp) 
+                if(valid[bufPos1+i] && buf[bufPos1+i] == fp)
                 {
-                    buc[p1]->valid[i] = false;
+                    valid[bufPos1+i]=false;
                     count--;
                     return true;
                 }
-                if (buc[p2]->valid[i] && buc[p2]->fp[i] == fp) 
+                if(valid[bufPos2+i] && buf[bufPos2+i]==fp) 
                 {
-                    buc[p2]->valid[i] = false;
+                    valid[bufPos2+i]=false;
                     count--;
                     return true;
                 }
@@ -131,20 +121,22 @@ public:
         }
         bool insertWithoutKey(uint fp, int p1, int p2, uint & victimfp, int & victimpos)
         {
+            int bufPos1=getIndex(p1, 0);
+            int bufPos2=getIndex(p2, 0);
             //find empty slot
             for (int i = 0; i<bucketsize; i++)
             {
-                if (!buc[p1]->valid[i])    
+                if(!valid[bufPos1+i])
                 {
-                    buc[p1]->fp[i] = fp;
-                    buc[p1]->valid[i] = true;
+                    buf[bufPos1+i]=fp;
+                    valid[bufPos1+i]=true;
                     count++;
                     return true;
                 }
-                if (!buc[p2]->valid[i]) 
+                if(!valid[bufPos2+i])
                 {
-                    buc[p2]->fp[i] = fp;
-                    buc[p2]->valid[i] = true;
+                    buf[bufPos2+i]=fp;
+                    valid[bufPos2+i]=true;
                     count++;
                     return true;
                 }
@@ -155,7 +147,7 @@ public:
             uint kickFp = fp;
             for (int k = 0; k<MAXKICK; k++) 
             {
-#if 1
+#if 0
                 //random kick with one hop check
                 int kickSlot = rand() % bucketsize;
                 int tmpKickP;
@@ -164,41 +156,43 @@ public:
                 for (int i = 0; i<bucketsize; i++, offset++) 
                 {
                     if (offset>=bucketsize)offset=0;
-                    int pos = getAnotherPos(kickP, buc[kickP]->fp[offset]);
+                    int pos=getAnotherPos(kickP, buf[getIndex(kickP,offset)]);
+                    int bufPos=getIndex(pos, 0);
                     if (kickSlot == offset)
                         tmpKickP = pos;
                     for (int j = 0; j<bucketsize; j++) 
                     {
-                        if (!buc[pos]->valid[j]) 
+                        if(!valid[bufPos=j])
                         {
-                            buc[pos]->fp[j]=buc[kickP]->fp[offset];
-                            buc[pos]->valid[j] = true;
-                            buc[kickP]->fp[offset] = kickFp;
+                            buf[bufPos+j]=buf[getIndex(kickP, offset)];
+                            valid[bufPos+j]=true;
+                            buf[getIndex(kickP, offset)] = kickFp;
                             count++;
                             return true;
                         }
                     }
                 }
-                int tmp = buc[kickP]->fp[kickSlot];
-                buc[kickP]->fp[kickSlot] = kickFp;
+                int tmp = buf[getIndex(kickP,kickSlot)];
+                buf[getIndex(kickP, kickSlot)]=kickFp;
                 kickFp = tmp;
                 kickP = tmpKickP;
 #endif
-#if 0
+#if 1
                 //random kick
                 int kickSlot = rand() % bucketsize;
 
-                int tmp = buc[kickP]->fp[kickSlot];
-                buc[kickP]->fp[kickSlot] = kickFp;
+                int tmp = buf[getIndex(kickP,kickSlot)];
+                buf[getIndex(kickP,kickSlot)]=kickFp;
                 kickFp = tmp;
 
                 kickP = getAnotherPos(kickP, kickFp);
+                int kickBufPos=getIndex(kickP,0);
                 for (int i = 0; i<bucketsize; i++) 
                 {
-                    if (!buc[kickP]->valid[i]) 
+                    if(!valid[kickBufPos+i])
                     {
-                        buc[kickP]->fp[i] = fp;
-                        buc[kickP]->valid[i] = true;
+                        buf[kickBufPos+i]=fp;
+                        valid[kickBufPos+i]=true;
                         count++;
                         return true;
                     }
@@ -211,12 +205,13 @@ public:
         }
         bool insertWithoutkick(uint fp, int idx) 
         {
+            int bufPos=getIndex(idx,0);
             for (int i = 0; i < bucketsize; i++) 
             {
-                if (!buc[idx]->valid[i]) 
+                if(!valid[bufPos+i])
                 {
-                    buc[idx]->fp[i] = fp;
-                    buc[idx]->valid[i] = true;
+                    buf[bufPos+i]=fp;
+                    valid[bufPos+i]=true;
                     count++;
                     return true;
                 }
@@ -335,12 +330,13 @@ public:
             //search every bucket
             for (int i = 0; i < nBucket; i++) 
             {
+                int bufPos=(*lit)->getIndex(i,0);
                 //for each bucket, search every unit
                 for (int j = 0; j < BucketSize; j++) 
                 {
-                    if ((*lit)->buc[i]->valid[j]) 
+                    if((*lit)->valid[bufPos+j]) 
                     {
-                        uint tmpfp = (*lit)->buc[i]->fp[j];
+                        uint tmpfp = (*lit)->buf[bufPos+j];
                         bool succ = false;
                         //search from the end to the start
                         for (rit = CFQ.rbegin(); (*rit) != (*lit); rit++) 
@@ -349,7 +345,7 @@ public:
                             succ = (*rit)->insertWithoutkick(tmpfp, i);
                             if (succ) 
                             {
-                                (*lit)->buc[i]->valid[j] = false;
+                                (*lit)->buf[bufPos+j] = false;
                                 (*lit)->count--;
                                 break;
                             }

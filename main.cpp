@@ -20,6 +20,7 @@ string ele[max_num]; // store different string
 set<string> s;
 void basicTest(int cnt)
 {
+    dynamicCuckoo d(1<<15, 4, BOB1, BOB2);
     int len=60000;
     cuckoo *cR = new cuckooRing(len, 4, BOB1, BOB2, BOB3);
     int insertNum = 0;
@@ -48,7 +49,7 @@ void basicTest(int cnt)
 int main(int argc, char ** argv){
 
 // read
-#if 0
+#if 1
     FILE *fin = NULL;
     int cnt = 0;
     char five_tuple[13];
@@ -67,7 +68,7 @@ int main(int argc, char ** argv){
     }
 #endif
 // generate synthetic dataset
-#if 1
+#if 0
     srand(time(NULL));
     unsigned char ch[4];
     int cnt = 0;
@@ -165,7 +166,6 @@ int main(int argc, char ** argv){
     fprintf(wf, "load ratio of cuckooRing :%.6lf%\n", (double)100.0 * insert_success_num / max_num);
     fprintf(wf, "\n");
 #endif
-
     cuckoo *cF = new cuckooFilter(1<<15, 4, BOB1, BOB2);
     time1 = clock();
     insert_success_num = 0;
@@ -234,7 +234,6 @@ int main(int argc, char ** argv){
     time2 = clock();
 
     printf("cnt = %d lookup time(ms) = %d ave lookup time(ms) %.6lf\n", cnt, time2 - time1, (double)(time2 - time1) / cnt);
-
 
     fclose(wf);
     delete cR;
