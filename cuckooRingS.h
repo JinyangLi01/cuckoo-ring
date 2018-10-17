@@ -110,6 +110,23 @@ public:
         copy[pos]=true;
     }
 
+    bool alternative(int p, int t, int &alter_pos, int &alter_slot){ 
+        uint fp = buf[getIndex(p,t)];
+        memory_access_num++;
+        int y = getAnotherPos(p, fp);
+        int bufPosY = getIndex(y, 0);
+        for(int i = 0; i < bSlot; ++i)
+            if(!valid[bufPosY+i]){ 
+                if(!i) memory_access_num++;
+                alter_slot = i;
+                alter_pos = y;
+                return true;  
+            } 
+            else
+                if(!i) memory_access_num++;
+        return false;
+    }
+
     bool insert(string key)
     {
         uint fp;
@@ -163,6 +180,40 @@ public:
                 memory_access_num++;
         }
 
+#if 1
+        //random kick with one hop check in first kick
+        int alter_pos = 0;
+        int alter_slot = 0;
+        for(int i = 0; i < bSlot; ++i){
+            if(alternative(p1, i, alter_pos, alter_slot)){
+                uint _fp = buf[bufPos1+i];
+                int x = alter_pos;
+                int y = alter_slot;
+                int bufPos=getIndex(y,x);
+                buf[bufPos] = _fp;
+                valid[bufPos] = true;
+                buf[bufPos1+i] = fp;
+                valid[bufPos1+i] = true;  
+                memory_access_num += 5;  
+                hop_num++;
+                return true;
+            }
+            if(alternative(p2, i, alter_pos, alter_slot)){
+                uint _fp = buf[bufPos2+i];
+                int x = alter_pos;
+                int y = alter_slot;
+                int bufPos=getIndex(y,x);
+                buf[bufPos] = _fp;
+                valid[bufPos] = true;
+                buf[bufPos2+i] = fp;
+                valid[bufPos2+i] = true; 
+                memory_access_num += 5; 
+                hop_num++;
+                return true;
+            }
+        } 
+#endif
+
         //kick
         int kickP=rand()%2==0?p1:p2;
         uint kickFp=fp;
@@ -203,8 +254,7 @@ public:
             memory_access_num += 2;
             kickFp=tmp;
             kickP = tmpKickP;
-#endif
-#if 1
+#else
             //random kick
             int kickSlot=rand()%bSlot;
             
