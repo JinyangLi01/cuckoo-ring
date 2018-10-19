@@ -22,7 +22,7 @@ void basicTest(int cnt)
 {
     dynamicCuckoo d(1<<15, 4, BOB1, BOB2);
     int len=60000;
-    cuckoo *cR = new cuckooRing(len, 4, BOB1, BOB2, BOB3);
+    cuckoo *cR = new cuckooRingS(len, 4, BOB1, BOB2, BOB3);
     int insertNum = 0;
     int existNum1 = 0;
     int existNum2 = 0;

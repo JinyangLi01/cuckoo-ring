@@ -94,7 +94,6 @@ public:
             return;
 
         int bufPos=getIndex(pos, 0);
-        if(!valid[bufPos] && !copy[bufPos])
         for(int i=0;i<bSlot;i++)
         {
             if(!valid[bufPos+i])
@@ -102,9 +101,7 @@ public:
             uint fp=buf[bufPos+i];
             int start=hOffset((char*)&fp,4)%bLen;
             int offset=ring(pos-start);        
-            if(offset<hLen)
-                copy[bufPos+i]=0;
-            else
+            if(offset>=hLen)
                 valid[bufPos+i]=0;               
         }
         copy[pos]=true;
