@@ -102,7 +102,7 @@ public:
             int start=hOffset((char*)&fp,4)%bLen;
             int offset=ring(pos-start);        
             if(offset>=hLen)
-                valid[bufPos+i]=0;               
+                valid[bufPos+i]=0; 
         }
         copy[pos]=true;
     }
