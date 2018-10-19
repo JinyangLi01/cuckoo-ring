@@ -38,7 +38,9 @@ public:
         {
             int tSize = _nbucket * _bucketsize;
             buf = new uint[tSize];
+            memset(buf, 0, tSize * sizeof(uint));
             valid = new bool[tSize];
+            memset(valid, 0, tSize * sizeof(bool));
             hLen=1;
             while(hLen<=nbucket)
                 hLen*=2;
